@@ -140,6 +140,80 @@ legend{padding:0 5px;font-weight:700}
   #banner{width:220px}#banner b{font-size:17px}#banner i{font-size:14px}
   #left{position:absolute;top:50px;bottom:28px;left:0;z-index:5;background:var(--bg);box-shadow:3px 0 12px rgba(0,0,0,.3);padding-right:8px}
 }
+#tbJog{display:none}
+/* axis selection inside the top bar (phone only) */
+#topAxes{display:none;align-items:center;gap:2px;margin-left:2px}
+#topAxes fieldset{border:none;background:none;padding:0;display:flex}
+#topAxes legend,#topAxes .axl{display:none}
+#topAxes select{width:52px;padding:2px 3px}
+#topAxes label{margin-left:2px}
+/* ---------- phone (6" class, landscape about 730x340 .. 860x410 dp) ----------
+   The page scrolls; top bar (tabs, axes, Port) and status line stay on screen.
+   Tablets (8" and larger) never match this and keep the fixed layout above. */
+@media (max-height:540px), (max-width:860px){
+  html{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto}
+  body{height:auto;min-height:100%;overflow:visible;font-size:13px}
+  #app{height:auto;min-height:100%}
+  button,input[type=text],input[type=number],select{min-height:34px}
+  input[type=checkbox],input[type=radio]{width:20px;height:20px;margin-right:4px}
+  #top{position:sticky;top:0;z-index:8;padding:3px 5px;gap:4px;flex-wrap:nowrap}
+  #banner{display:none}
+  #panelBtn{width:36px;min-width:36px;font-size:18px}
+  .tabs{margin:0 0 -4px 0;gap:1px}
+  .tabs button{min-height:34px;padding:2px 8px;font-size:12px}
+  #topAxes{display:flex}
+  #topAxes #axes{display:flex;gap:4px}
+  #conn{font-size:11px;line-height:1.15;white-space:normal;max-width:96px}
+  #portBtn,#aboutBtn{padding:2px 8px}
+  #aboutBtn{min-width:34px}
+  #main{display:block}
+  #right{display:block;padding:4px 6px}
+  .tab.on{display:block}
+  #left{position:fixed;top:var(--tb,40px);bottom:0;left:0;width:300px;max-width:88vw;z-index:20;background:var(--bg);
+    box-shadow:3px 0 12px rgba(0,0,0,.3);padding:6px 8px;overflow-y:auto}
+  #logBox{flex:none;height:220px}
+  #bar{position:sticky;bottom:0;z-index:8;min-height:20px;padding:1px 8px;font-size:11px}
+  /* Configuration / Open loop */
+  .big{font-size:13px}
+  .big button,.big input,.big select{min-height:34px}
+  .big legend{font-size:13px}
+  #cfg{display:grid;grid-template-rows:none;grid-auto-rows:auto;overflow:visible;gap:6px}
+  #cfg fieldset{gap:6px;padding:2px 8px 6px}
+  #cfgOpt button{min-width:0}
+  #cfgInfo .v{font-size:14px}
+  #ol{display:flex;overflow:visible;gap:6px}
+  #ol fieldset{grid-template-columns:auto auto 1fr auto;gap:5px 8px;padding:2px 10px 8px}
+  #ol .mut{font-size:12px}
+  #olBtns{grid-template-columns:1fr 1fr;margin-top:4px}
+  #olBtns button{min-height:44px;font-size:15px}
+  #olNote{font-size:12px}
+  .spin input{width:64px}
+  .spin button{min-width:32px;font-size:16px}
+  /* Motor Control: two short tool rows, graph fills the rest of the first screen, controls below */
+  #mc{gap:3px}
+  .gbar{gap:3px}
+  .gbar button{padding:2px 7px}
+  .gbar input[type=text]{width:70px}
+  #legend{display:none}
+  #disp{margin-left:auto;padding:0;border:none;background:none;grid-template-columns:auto auto auto auto auto auto;gap:0 4px}
+  #disp legend{display:none}
+  .mon{min-height:32px;min-width:64px;font-size:12px;padding:2px 4px}
+  #graphWrap{flex:none;height:var(--gh,220px)}
+  #graph{touch-action:pan-y}
+  #mcb{flex-wrap:wrap;font-size:13px;gap:5px;margin-top:4px}
+  #mcb fieldset{padding:1px 6px 5px}
+  #mcb button{padding:2px 6px}
+  #cl input[type=number]{width:74px;margin:0 3px}
+  #velRow input[type=range]{width:70px}
+  #ptp input{width:68px}
+  #tbJog{display:flex;flex:1 1 auto;gap:5px;margin:0 4px 0 6px;min-width:200px}
+  #tbJog .jogb{flex:1 1 0;min-height:34px;max-width:170px;font-size:14px;padding:2px 6px;border-width:2px}
+  #jog{flex:1 1 0;min-width:96px;max-width:150px;align-self:stretch}
+  #jog .row{flex-wrap:wrap;gap:3px}
+  #jog input{width:52px}
+  #dlg{min-width:min(380px,92vw);max-height:92vh;overflow:auto}
+  #dlg .btns button{min-height:38px}
+}
 </style>
 </head>
 <body>
@@ -152,6 +226,7 @@ legend{padding:0 5px;font-weight:700}
       <button data-tab="tabMc" class="on">Motor Control</button>
       <button data-tab="tabOl">Open loop</button>
     </div>
+    <div id="topAxes"></div>
     <span id="conn" class="err">Not connected</span>
     <button id="portBtn" style="font-weight:700">Port</button>
     <button id="aboutBtn">About</button>
@@ -162,9 +237,9 @@ legend{padding:0 5px;font-weight:700}
     <div id="left">
       <div id="axes">
         <fieldset><legend>Address #1</legend>
-          <div class="row"><label><input type="checkbox" id="ax1" checked>Axis 1</label><select id="ad1"></select></div></fieldset>
+          <div class="row"><label><input type="checkbox" id="ax1" checked><span class="axl">Axis 1</span></label><select id="ad1"></select></div></fieldset>
         <fieldset><legend>Address #2</legend>
-          <div class="row"><label><input type="checkbox" id="ax2">Axis 2</label><select id="ad2"></select></div></fieldset>
+          <div class="row"><label><input type="checkbox" id="ax2"><span class="axl">Axis 2</span></label><select id="ad2"></select></div></fieldset>
       </div>
       <fieldset><legend>RS485 received data</legend>
         <label><input type="checkbox" id="v_msg" checked>Message on/off</label></fieldset>
@@ -226,13 +301,13 @@ legend{padding:0 5px;font-weight:700}
 
       <!-- Motor Control -->
       <div class="tab on" id="tabMc"><div id="mc">
-        <div class="gbar">
+        <div class="gbar" id="gbar1">
           <button id="g_r">R</button><button id="g_out">&minus;</button><button id="g_in">+</button>
           <input type="text" inputmode="decimal" id="v_ylo" style="margin-left:6px"><span>-</span>
           <input type="text" inputmode="decimal" id="v_yhi">
           <button id="g_full">Full View</button>
-          <span style="color:var(--red);margin-left:6px">&lt;A : Target Position</span><span>/</span>
-          <span style="color:var(--blue)">&lt;B : Current Position</span>
+          <span id="legend"><span style="color:var(--red);margin-left:6px">&lt;A : Target Position</span> /
+          <span style="color:var(--blue)">&lt;B : Current Position</span></span>
           <fieldset id="disp"><legend>Display</legend>
             <span>Graph</span>
             <label><input type="radio" name="disp" value="1" checked>1</label>
@@ -240,14 +315,15 @@ legend{padding:0 5px;font-weight:700}
             <span>Monitor</span><button class="mon" id="mon1">01 OFF</button><button class="mon" id="mon2">02 OFF</button>
           </fieldset>
         </div>
-        <div class="gbar">
+        <div class="gbar" id="gbar2">
           <span>X span</span><select id="v_span"></select>
           <button id="x_out">X &minus;</button><button id="x_in">X +</button>
           <label style="margin-left:6px"><input type="checkbox" id="v_follow" checked>Follow</label>
           <label><input type="checkbox" id="v_movesonly" checked>Moves only</label>
+          <span id="tbJog"></span>
           <span class="grow"></span>
           <button id="g_clear">Clear</button><button id="g_csv">Save CSV</button>
-          <label style="margin-left:6px"><input type="checkbox" id="v_ctime" checked>C = time axis</label>
+          <label style="margin-left:6px" id="ctimeLab"><input type="checkbox" id="v_ctime" checked>C = time axis</label>
         </div>
         <div id="graphWrap"><canvas id="graph"></canvas></div>
         <div id="mcb">
@@ -265,7 +341,7 @@ legend{padding:0 5px;font-weight:700}
             <span>Target2</span><input type="number" id="v_t2" value="1000"><button id="b_ptpstop" class="stop">STOP</button>
             <span>Interval</span><input type="number" id="v_iv" value="200"><span></span>
           </div></fieldset>
-          <fieldset id="jog"><legend>Jog (hold)</legend>
+          <fieldset id="jog"><legend id="jogLeg">Jog (hold)</legend>
             <div class="row"><input type="number" id="v_jogvel" value="5"><span>mm/s</span></div>
             <button class="jogb" id="jogp">Jog + &nbsp;&#9654;</button>
             <button class="jogb" id="jogm">&#9664; &nbsp;Jog &minus;</button>
@@ -446,7 +522,7 @@ class PosGraph {
     this.L = 74; this.R = 14; this.T = 10; this.B = 28;
     this.trace = new Trace(); this.span = 2; this.follow = true; this.view_right = null;
     this.y_manual = null; this.y_latch = null; this.cp_text = ""; this.on_view_change = on_view_change;
-    this._drag = null; this._x = [0, 1]; this._lastTap = 0;
+    this._drag = null; this._x = [0, 1]; this._lastTap = 0; this.legend = false;
     new ResizeObserver(() => this.redraw()).observe(canvas);
     canvas.addEventListener("wheel", e => { e.preventDefault(); this.zoom_x(e.deltaY < 0 ? -1 : 1); }, { passive: false });
     canvas.addEventListener("pointerdown", e => {
@@ -600,10 +676,24 @@ class PosGraph {
       ctx.font = "13px Consolas, 'Roboto Mono', monospace"; ctx.fillStyle = "#303030";
       ctx.textBaseline = "top"; ctx.fillText(this.cp_text, L + 8, T + 6);
     }
+    let ty = T + 6;
+    ctx.font = "12px Roboto, system-ui, Arial, sans-serif"; ctx.textBaseline = "middle"; ctx.textAlign = "right";
+    if (this.legend) {
+      const items = [["B Current", "#0050e0"], ["A Target", "#e00000"]];
+      const lw = items.reduce((n, [t]) => n + ctx.measureText(t).width + 32, 0);
+      ctx.fillStyle = "rgba(255,255,255,0.85)"; ctx.fillRect(L + pw - lw - 6, ty - 2, lw + 4, 16);
+      let x = L + pw - 6;
+      for (const [txt, col] of items) {
+        ctx.fillStyle = col; ctx.fillText(txt, x, ty + 6);
+        x -= ctx.measureText(txt).width + 4;
+        ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - 16, ty + 6); ctx.lineTo(x, ty + 6); ctx.stroke();
+        x -= 28;
+      }
+      ty += 16;
+    }
     if (!this.follow && this.span !== null) {
-      ctx.font = "12px Roboto, system-ui, Arial, sans-serif"; ctx.fillStyle = "#a06000";
-      ctx.textAlign = "right"; ctx.textBaseline = "top";
-      ctx.fillText("Follow off (double-tap to follow)", L + pw - 6, T + 6);
+      ctx.fillStyle = "#a06000"; ctx.textBaseline = "top";
+      ctx.fillText("Follow off (double-tap to follow)", L + pw - 6, ty);
     }
   }
 }
@@ -989,8 +1079,9 @@ function port_error(msg) {
 function axes_text() { const t = targets(); return t.length ? t.map(pad2).join("+") : "none"; }
 function update_conn_label() {
   const c = $("conn");
-  if (D.open) { c.textContent = `${D.name}  ${D.baudrate} bps  |  Axis ${axes_text()}`; c.className = "ok"; }
-  else { c.textContent = `Not connected  |  Axis ${axes_text()}`; c.className = "err"; }
+  const short = isPhone();
+  if (D.open) { c.textContent = short ? `Connected ${D.baudrate}` : `${D.name}  ${D.baudrate} bps  |  Axis ${axes_text()}`; c.className = "ok"; }
+  else { c.textContent = short ? "Not connected" : `Not connected  |  Axis ${axes_text()}`; c.className = "err"; }
 }
 
 // ---------------------------------------------------------------- sending
@@ -1536,6 +1627,46 @@ function about() {
 }
 
 // ======================================================================
+// Phone layout (6" class): axes in the top bar, graph fills the first screen
+// ======================================================================
+const PHONE_QUERY = "(max-height:540px), (max-width:860px)";
+const isPhone = () => window.matchMedia(PHONE_QUERY).matches;
+function apply_layout() {
+  const phone = isPhone(), axes = $("axes");
+  const home = phone ? $("topAxes") : $("left");
+  if (axes.parentNode !== home) home.prepend(axes);
+  $("aboutBtn").textContent = phone ? "?" : "About";
+  // phone: Jog buttons go to the X span row (next to the graph), "C = time axis" to the first row
+  const jm = $("jogm"), jp = $("jogp");
+  if (phone) {
+    if (jm.parentNode !== $("tbJog")) $("tbJog").append(jm, jp);
+    $("gbar1").insertBefore($("ctimeLab"), $("disp"));
+    jm.innerHTML = "&#9664; Jog &minus;"; jp.innerHTML = "Jog + &#9654;";
+    $("jogLeg").textContent = "Jog speed";
+  } else {
+    if (jm.parentNode !== $("jog")) $("jog").append(jp, jm);
+    $("gbar2").append($("ctimeLab"));
+    jp.innerHTML = "Jog + &nbsp;&#9654;"; jm.innerHTML = "&#9664; &nbsp;Jog &minus;";
+    $("jogLeg").textContent = "Jog (hold)";
+  }
+  graph.legend = phone;
+  document.documentElement.style.setProperty("--tb", $("top").offsetHeight + "px");   // panel starts below the top bar
+  update_conn_label();
+  fit_graph();
+}
+function fit_graph() {
+  const w = $("graphWrap");
+  if (!isPhone()) { w.style.removeProperty("--gh"); S.graph_dirty = true; return; }
+  const f = document.activeElement;
+  if (f && (f.tagName === "INPUT" || f.tagName === "SELECT")) return;   // keyboard may be open
+  if (!$("tabMc").classList.contains("on")) return;
+  const top = w.getBoundingClientRect().top + window.scrollY;
+  const h = Math.max(170, Math.floor(window.innerHeight - top - $("bar").offsetHeight - 4));
+  w.style.setProperty("--gh", h + "px");
+  S.graph_dirty = true;
+}
+
+// ======================================================================
 // Build / wire the page
 // ======================================================================
 function init() {
@@ -1571,13 +1702,19 @@ function init() {
   for (const b of document.querySelectorAll(".tabs button")) b.onclick = () => {
     for (const x of document.querySelectorAll(".tabs button")) x.classList.toggle("on", x === b);
     for (const t of document.querySelectorAll("#right > .tab")) t.classList.toggle("on", t.id === b.dataset.tab);
+    if (isPhone()) window.scrollTo(0, 0);
+    fit_graph();
     S.graph_dirty = true;
   };
   $("panelBtn").onclick = () => { $("left").classList.toggle("hide"); S.graph_dirty = true; };
   const narrow = () => window.matchMedia("(max-width:1150px)").matches;
   if (narrow()) $("left").classList.add("hide");
   // narrow screens: the panel lies over the tabs - a tap outside closes it
-  $("right").addEventListener("pointerdown", () => { if (narrow()) $("left").classList.add("hide"); }, true);
+  document.addEventListener("pointerdown", e => {
+    const l = $("left");
+    if (narrow() && !l.classList.contains("hide") && !l.contains(e.target) && !$("panelBtn").contains(e.target)
+        && !$("dlgBack").contains(e.target)) l.classList.add("hide");
+  }, true);
   $("portBtn").onclick = port_dialog;
   $("aboutBtn").onclick = about;
 
@@ -1679,7 +1816,12 @@ function init() {
   $("ver").textContent = `${APP_NAME} V${APP_VERSION}`;
   apply_preset(DEFAULT_MOTOR);
   axis_changed(true);
-  update_conn_label();
+  apply_layout();
+  let lastW = window.innerWidth;
+  window.addEventListener("resize", () => {
+    // width change = new screen/orientation; a height-only change is usually the keyboard
+    if (window.innerWidth !== lastW) { lastW = window.innerWidth; apply_layout(); } else fit_graph();
+  });
   setInterval(tick, 10);
 }
 init();
