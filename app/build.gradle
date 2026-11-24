@@ -1,0 +1,55 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.technohands.td201'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.technohands.td201'
+        minSdk 24
+        targetSdk 34
+        // Raise versionCode by 1 for every new APK you hand out.
+        // versionName follows the PC program version it was ported from.
+        versionCode 1
+        versionName '1.8.2'
+    }
+
+    // Fixed signing key kept in the project so that every build can be installed
+    // over the previous one. Keep app/td201.keystore: if it is lost, tablets must
+    // uninstall the old app before installing a new build.
+    signingConfigs {
+        td201 {
+            storeFile file('td201.keystore')
+            storePassword 'td201manager'
+            keyAlias 'td201'
+            keyPassword 'td201manager'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.td201
+        }
+        debug {
+            signingConfig signingConfigs.td201
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+
+dependencies {
+    // only needed by the bundled usb-serial-for-android sources (@IntDef)
+    implementation 'androidx.annotation:annotation:1.9.1'
+}

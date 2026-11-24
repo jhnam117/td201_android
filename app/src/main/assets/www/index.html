@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#2b2b2b">
+<title>TD-201 Manager</title>
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#f0f0f2;--card:#fff;--line:#c4c4cc;--txt:#1e1e1e;--mut:#6a6a6a;--blue:#0050e0;--red:#e00000;--err:#c00000;--ok:#007000;--stop:#b00000}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
+  font:14px/1.3 Roboto,system-ui,"Segoe UI",Arial,sans-serif;-webkit-text-size-adjust:100%;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+input,select,textarea{-webkit-user-select:text;user-select:text}
+button,input,select{font:inherit;color:inherit}
+button{min-height:38px;padding:3px 12px;border:1px solid #9a9aa4;border-radius:6px;background:#f8f8fa;cursor:pointer;
+  touch-action:manipulation;white-space:nowrap}
+button:active{background:#dfe3ec}
+button:disabled{opacity:.45}
+button.stop{color:var(--stop);font-weight:700}
+input[type=text],input[type=number],select{min-height:38px;padding:3px 7px;border:1px solid #9a9aa4;border-radius:6px;background:#fff;min-width:0}
+input[type=number]{text-align:right;-moz-appearance:textfield}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input[type=checkbox],input[type=radio]{width:22px;height:22px;margin:0 6px 0 0;vertical-align:middle;accent-color:#1a5fb4}
+label{display:inline-flex;align-items:center;cursor:pointer;white-space:nowrap}
+fieldset{border:1px solid var(--line);border-radius:8px;margin:0;padding:4px 10px 8px;background:var(--card);min-width:0}
+legend{padding:0 5px;font-weight:700}
+.row{display:flex;align-items:center;gap:6px}
+.grow{flex:1}
+.mut{color:var(--mut)}
+.mono{font-family:Consolas,"Roboto Mono","DejaVu Sans Mono",monospace}
+
+/* ---------- frame ---------- */
+#app{display:flex;flex-direction:column;height:100%}
+#top{display:flex;align-items:center;gap:6px;padding:4px 8px;background:#e4e4e8;border-bottom:1px solid #b8b8c0}
+#banner{position:relative;width:300px;height:40px;flex:none;border-top:1px solid #5a5a5a;border-bottom:1px solid #bdbdbd;
+  background:linear-gradient(90deg,#121212 0%,#3a3a3c 25%,#8c8c90 60%,#eeeef2 98%,transparent 98%)}
+#banner b{position:absolute;left:12px;top:5px;font:900 22px/28px "Arial Black",Arial,sans-serif;color:#f4f4f4;text-shadow:2px 2px 0 #000;letter-spacing:.5px}
+#banner i{position:absolute;right:14px;top:10px;font:700 16px/22px "Times New Roman",serif;color:#6f7b87;font-style:normal}
+#panelBtn{width:44px;padding:0;font-size:20px}
+.tabs{display:flex;gap:2px;margin-left:8px;align-self:flex-end;margin-bottom:-5px}
+.tabs button{border-radius:8px 8px 0 0;border-bottom:none;min-height:40px;padding:4px 18px;font-weight:700;background:#d8d8de}
+.tabs button.on{background:var(--bg);border-color:#b8b8c0}
+#conn{margin-left:auto;font-weight:700;font-size:13px;text-align:right}
+#conn.ok{color:var(--ok)}#conn.err{color:var(--err)}
+#main{flex:1;display:flex;min-height:0}
+#left{width:300px;flex:none;display:flex;flex-direction:column;gap:6px;padding:6px 0 6px 8px;min-height:0;overflow-y:auto}
+#left.hide{display:none}
+#right{flex:1;min-width:0;display:flex;flex-direction:column;padding:6px 8px}
+.tab{display:none;flex:1;min-height:0}
+.tab.on{display:flex;flex-direction:column}
+#bar{display:flex;align-items:center;gap:10px;padding:3px 10px;border-top:1px solid #b8b8c0;background:#e4e4e8;font-size:13px;min-height:26px}
+#msg.err{color:var(--err)}
+#ver{margin-left:auto;color:var(--mut)}
+
+/* ---------- left panel ---------- */
+#axes{display:flex;gap:6px}
+#axes fieldset{flex:1;padding:2px 6px 6px}
+#axes select{width:62px}
+.st-row{display:flex;gap:6px;align-items:baseline;margin-top:4px}
+.st-hex{font:700 14px Consolas,"Roboto Mono",monospace;white-space:nowrap}
+.st-fl{flex:1;font-size:13px;word-break:break-word}
+.st-pos{font:13px Consolas,"Roboto Mono",monospace;color:#333;padding-left:4px}
+#logBox{flex:1;display:flex;flex-direction:column;min-height:150px}
+#log{flex:1;margin-top:4px;overflow:auto;border:1px solid #9a9aa4;border-radius:4px;background:#fff;padding:2px 4px;
+  font:12px/1.35 Consolas,"Roboto Mono",monospace;white-space:pre;-webkit-user-select:text;user-select:text;min-height:80px}
+#log .tx{color:#808080}#log .err{color:var(--err)}#log .info{color:#006060}
+.test{display:flex;gap:4px;margin-top:3px}
+.test input{flex:1;font:13px Consolas,"Roboto Mono",monospace}
+
+/* ---------- spin box ---------- */
+.spin{display:inline-flex;align-items:stretch}
+.spin input{width:84px;border-radius:0}
+.spin button{min-width:36px;padding:0;font-size:18px;font-weight:700}
+.spin button:first-child{border-radius:6px 0 0 6px;border-right:none}
+.spin button:last-child{border-radius:0 6px 6px 0;border-left:none}
+
+/* ---------- Configuration / Open loop (bigger) ---------- */
+.big{font-size:16px}
+.big button,.big input,.big select{min-height:42px}
+.big legend{font-size:17px}
+#cfg{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(5,minmax(min-content,1fr));gap:8px;overflow-y:auto;padding:2px}
+#cfg fieldset{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#cfg fieldset > .send{margin-left:auto}
+#cfgOpt{display:grid!important;grid-template-columns:auto auto;gap:6px 14px;justify-content:start;align-content:center}
+#cfgOpt button{min-width:200px}
+#cfgInfo{display:grid!important;grid-template-columns:auto 1fr;gap:4px 10px;align-content:center}
+#cfgInfo .v{font:16px Consolas,"Roboto Mono",monospace}
+#advCell{display:flex;flex-direction:column;gap:6px;min-height:0}
+#advCell > button{align-self:flex-start}
+#adv{display:none!important;grid-template-columns:auto auto 1fr;gap:6px 8px;align-items:center}
+#adv.open{display:grid!important}
+#adv .send{justify-self:end}
+#ol{flex:1;min-height:0;overflow-y:auto;padding:2px;gap:14px}
+#ol fieldset{display:grid;grid-template-columns:210px auto 200px auto;gap:10px 10px;align-items:center;justify-content:start;padding:6px 14px 12px}
+#olBtns{grid-column:1/-1;display:grid;grid-template-columns:230px 230px;gap:10px;margin-top:8px}
+#olBtns button{min-height:58px;font-size:18px;font-weight:700}
+#olNote{color:var(--mut);font-size:15px}
+
+/* ---------- Motor Control ---------- */
+#mc{flex:1;min-height:0;display:flex;flex-direction:column;gap:4px}
+.gbar{display:flex;align-items:center;gap:5px;flex-wrap:nowrap}
+.gbar button{padding:3px 9px}
+.gbar input[type=text]{width:92px;text-align:right}
+#disp{margin-left:auto;padding:0 8px 4px;display:grid;grid-template-columns:auto auto auto;gap:2px 8px;align-items:center}
+.mon{min-height:32px;min-width:84px;font-size:13px;font-weight:700;border-radius:5px;background:#d6d6d6;color:#404040}
+.mon.on{background:#2e9e44;color:#fff;border-color:#237a34}
+#graphWrap{flex:1;min-height:120px;position:relative}
+#graph{position:absolute;inset:0;width:100%;height:100%;border:1px solid #9a9a9a;background:#fff;touch-action:none}
+#mcb{display:flex;gap:8px;font-size:15px}
+#mcb fieldset{padding:2px 8px 6px}
+#mcb button{padding:3px 9px}
+#cl{display:grid;grid-template-columns:auto auto auto auto auto;gap:4px 3px;align-items:center}
+#cl input[type=number]{width:96px;margin:0 4px}
+#velRow{grid-column:2/6;display:flex;align-items:center;gap:6px}
+#velRow input[type=range]{width:110px;margin:0 2px}
+#velRow .spin input{width:64px}
+#ptp{display:grid;grid-template-columns:auto auto auto;gap:4px 6px;align-items:center}
+#ptp input{width:86px}
+#jog{flex:1;display:flex;flex-direction:column;gap:4px;min-width:130px}
+#jog input{width:56px}
+.jogb{flex:1;min-height:44px;font-size:19px;font-weight:700;background:#e8eef8;border:2px solid #8ea0bf;touch-action:none;
+  -webkit-touch-callout:none}
+.jogb.held{background:#c9d8f0}
+
+/* ---------- dialogs ---------- */
+#dlgBack{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:10}
+#dlgBack.on{display:flex}
+#dlg{background:#fff;border-radius:10px;min-width:380px;max-width:80vw;padding:16px 18px;box-shadow:0 8px 30px rgba(0,0,0,.35);font-size:15px}
+#dlg h3{margin:0 0 10px;font-size:17px}
+#dlg .body{white-space:pre-wrap;margin-bottom:14px}
+#dlg .btns{display:flex;gap:8px;justify-content:flex-end}
+#dlg .btns button{min-width:96px;min-height:42px}
+#dlg.warn h3{color:#a05000}
+#dlg.error h3{color:var(--err)}
+
+/* narrow screens: left panel slides over the tabs */
+@media (max-width:1150px){
+  #banner{width:220px}#banner b{font-size:17px}#banner i{font-size:14px}
+  #left{position:absolute;top:50px;bottom:28px;left:0;z-index:5;background:var(--bg);box-shadow:3px 0 12px rgba(0,0,0,.3);padding-right:8px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top">
+    <button id="panelBtn" title="Show / hide the left panel">&#9776;</button>
+    <div id="banner"><b>TULA DRIVER</b><i>TD-201</i></div>
+    <div class="tabs">
+      <button data-tab="tabCfg">Configuration</button>
+      <button data-tab="tabMc" class="on">Motor Control</button>
+      <button data-tab="tabOl">Open loop</button>
+    </div>
+    <span id="conn" class="err">Not connected</span>
+    <button id="portBtn" style="font-weight:700">Port</button>
+    <button id="aboutBtn">About</button>
+  </div>
+
+  <div id="main">
+    <!-- ================= left panel ================= -->
+    <div id="left">
+      <div id="axes">
+        <fieldset><legend>Address #1</legend>
+          <div class="row"><label><input type="checkbox" id="ax1" checked>Axis 1</label><select id="ad1"></select></div></fieldset>
+        <fieldset><legend>Address #2</legend>
+          <div class="row"><label><input type="checkbox" id="ax2">Axis 2</label><select id="ad2"></select></div></fieldset>
+      </div>
+      <fieldset><legend>RS485 received data</legend>
+        <label><input type="checkbox" id="v_msg" checked>Message on/off</label></fieldset>
+      <fieldset><legend>Status</legend>
+        <div class="row"><button id="readBtn">Read</button><label><input type="checkbox" id="v_live">Live update</label></div>
+        <div id="stRows"></div></fieldset>
+      <fieldset id="logBox"><legend>Received data...</legend>
+        <div class="row"><button id="logClear">CLEAR</button><button id="logSave">SAVE</button>
+          <label><input type="checkbox" id="v_logpoll">Show polling</label></div>
+        <div id="log"></div></fieldset>
+      <fieldset><legend>Test</legend><div id="tests"></div></fieldset>
+    </div>
+
+    <!-- ================= tabs ================= -->
+    <div id="right">
+      <!-- Configuration -->
+      <div class="tab big" id="tabCfg"><div id="cfg">
+        <fieldset><legend>1. Motor Type</legend>
+          <label><input type="radio" name="motor" value="TULA35">TULA35</label>
+          <label><input type="radio" name="motor" value="TULA50">TULA50</label>
+          <label><input type="radio" name="motor" value="TULA70">TULA70</label></fieldset>
+        <fieldset><legend>3. Driving Frequency</legend>
+          <span class="spin" data-id="v_freq"></span><span>kHz &nbsp;(20-100)</span>
+          <button class="send" id="s_freq">SEND</button></fieldset>
+        <fieldset><legend>2. Encoder Type</legend>
+          <label><input type="radio" name="enc" value="1">AB</label>
+          <label style="margin-left:14px"><input type="radio" name="enc" value="2" checked>ABZ</label>
+          <button class="send" id="s_enc">SEND</button></fieldset>
+        <fieldset><legend>4. Voltage</legend>
+          <span class="spin" data-id="v_volt"></span><span>Vdc &nbsp;(16-35, both axes)</span>
+          <button class="send" id="s_volt">SEND</button></fieldset>
+        <fieldset><legend>5. Resolution</legend>
+          <select id="v_res" style="width:110px"></select><span>nm</span>
+          <button class="send" id="s_res">SEND</button></fieldset>
+        <fieldset><legend>6. Encoder invert direction</legend>
+          <label><input type="checkbox" id="v_swap">Invert direction (swap A/B)</label>
+          <button class="send" id="s_swap">SEND</button></fieldset>
+        <fieldset><legend>7. Motor invert direction</legend>
+          <label><input type="checkbox" id="v_mid">Invert direction</label>
+          <button class="send" id="s_mid">SEND</button></fieldset>
+        <div id="advCell">
+          <button id="advBtn">Advanced &#9660;</button>
+          <fieldset id="adv"><legend>Advanced</legend>
+            <span>Baud rate</span><select id="v_newbaud"></select><button class="send" id="s_baud">Change</button>
+            <span>In-position</span><span class="spin" data-id="v_inp"></span><button class="send" id="s_inp">SEND</button>
+            <span>Home offset</span><span class="spin" data-id="v_offset"></span><button class="send" id="s_offset">SEND</button>
+          </fieldset>
+        </div>
+        <fieldset id="cfgOpt"><legend>Optional</legend>
+          <button id="b_setcfg">1. Set_Configuration</button><button id="b_save">Save to flash</button>
+          <button id="b_auto">2. Auto-Tuning</button><button id="b_reset">Reset (warm start)</button>
+          <button id="b_cfgstop" class="stop">STOP</button></fieldset>
+        <fieldset id="cfgInfo"><legend>Get-Information</legend>
+          <div style="grid-column:1/-1"><button id="b_info">Get_Information</button></div>
+          <span>FW version:</span><span class="v" id="i_ver">-</span>
+          <span>Limit -:</span><span class="v" id="i_lm">-</span>
+          <span>Limit +:</span><span class="v" id="i_lp">-</span></fieldset>
+      </div></div>
+
+      <!-- Motor Control -->
+      <div class="tab on" id="tabMc"><div id="mc">
+        <div class="gbar">
+          <button id="g_r">R</button><button id="g_out">&minus;</button><button id="g_in">+</button>
+          <input type="text" inputmode="decimal" id="v_ylo" style="margin-left:6px"><span>-</span>
+          <input type="text" inputmode="decimal" id="v_yhi">
+          <button id="g_full">Full View</button>
+          <span style="color:var(--red);margin-left:6px">&lt;A : Target Position</span><span>/</span>
+          <span style="color:var(--blue)">&lt;B : Current Position</span>
+          <fieldset id="disp"><legend>Display</legend>
+            <span>Graph</span>
+            <label><input type="radio" name="disp" value="1" checked>1</label>
+            <label><input type="radio" name="disp" value="2">2</label>
+            <span>Monitor</span><button class="mon" id="mon1">01 OFF</button><button class="mon" id="mon2">02 OFF</button>
+          </fieldset>
+        </div>
+        <div class="gbar">
+          <span>X span</span><select id="v_span"></select>
+          <button id="x_out">X &minus;</button><button id="x_in">X +</button>
+          <label style="margin-left:6px"><input type="checkbox" id="v_follow" checked>Follow</label>
+          <label><input type="checkbox" id="v_movesonly" checked>Moves only</label>
+          <span class="grow"></span>
+          <button id="g_clear">Clear</button><button id="g_csv">Save CSV</button>
+          <label style="margin-left:6px"><input type="checkbox" id="v_ctime" checked>C = time axis</label>
+        </div>
+        <div id="graphWrap"><canvas id="graph"></canvas></div>
+        <div id="mcb">
+          <fieldset><legend>Closed Loop Control</legend><div id="cl">
+            <span>Absolute:</span><input type="number" id="v_abs" value="1000">
+            <button id="b_target">Target</button><button id="b_home">Home</button><button id="b_getpos">Get-Position</button>
+            <span>Relative:</span><input type="number" id="v_rel" value="200">
+            <button id="b_rev">&larr; Step Rev</button><button id="b_fwd">Step Fwd &rarr;</button><button id="b_clstop" class="stop">STOP</button>
+            <span>Velocity:</span>
+            <div id="velRow"><input type="range" id="vel_scale" min="1" max="100" value="10">
+              <span class="spin" data-id="v_vel"></span><span>[mm/s]</span><button id="s_vel">SEND</button></div>
+          </div></fieldset>
+          <fieldset><legend>PTP Demo</legend><div id="ptp">
+            <span>Target1</span><input type="number" id="v_t1" value="0"><button id="b_ptpstart">START</button>
+            <span>Target2</span><input type="number" id="v_t2" value="1000"><button id="b_ptpstop" class="stop">STOP</button>
+            <span>Interval</span><input type="number" id="v_iv" value="200"><span></span>
+          </div></fieldset>
+          <fieldset id="jog"><legend>Jog (hold)</legend>
+            <div class="row"><input type="number" id="v_jogvel" value="5"><span>mm/s</span></div>
+            <button class="jogb" id="jogp">Jog + &nbsp;&#9654;</button>
+            <button class="jogb" id="jogm">&#9664; &nbsp;Jog &minus;</button>
+          </fieldset>
+        </div>
+      </div></div>
+
+      <!-- Open loop -->
+      <div class="tab big" id="tabOl"><div id="ol" style="display:flex;flex-direction:column">
+        <fieldset><legend>Setting</legend>
+          <span>Frequency [kHz]</span><span class="spin" data-id="v_ol_freq"></span><span class="mut">20-100</span><button id="s_ol_freq">Send</button>
+          <span>Duty [%]</span><span class="spin" data-id="v_ol_duty"></span><span class="mut">1-48 (normally 25)</span><button id="s_ol_duty">Send</button>
+          <span>Volt [Vdc]</span><span class="spin" data-id="v_ol_volt"></span><span class="mut">16-35 (both axes)</span><button id="s_ol_volt">Send</button>
+        </fieldset>
+        <fieldset><legend>Moving</legend>
+          <span>Duration (ms/pulse)</span><span class="spin" data-id="v_on"></span><span class="mut">1-6,000,000</span><button id="s_on">Send</button>
+          <span>Interval (ms)</span><span class="spin" data-id="v_off"></span><span class="mut">1-600,000</span><button id="s_off">Send</button>
+          <span>Steps (Cycles)</span><span class="spin" data-id="v_cy"></span><span class="mut">1-2^31</span><button id="s_cy">Send</button>
+          <div id="olBtns">
+            <button id="ol_re">&#9664; &nbsp;Reverse</button><button id="ol_fo">Forward &nbsp;&#9654;</button>
+            <button id="ol_bi">&#9664; &nbsp;Bi &nbsp;&#9654;</button><button id="ol_st" class="stop">Stop</button>
+          </div>
+        </fieldset>
+        <div id="olNote">Open loop does not use the encoder. To watch the encoder position while driving, turn Monitor ON
+          in Motor Control (if the controller sends &lt;A/&lt;B in open loop).</div>
+      </div></div>
+    </div>
+  </div>
+
+  <div id="bar"><span id="msg">Ready</span><span id="ver"></span></div>
+</div>
+
+<div id="dlgBack"><div id="dlg"><h3></h3><div class="body"></div><div class="extra"></div><div class="btns"></div></div></div>
+
+<script src="android-serial.js"></script>
+<script>
+"use strict";
+/* =====================================================================
+   TD-201 Manager - HTML version of TD-201 PC Manager V1.8.2 (td201_gui.py)
+   The logic below follows the Python program function by function.
+   Runs in the Android app (android-serial.js) and in Chrome/Edge (Web Serial).
+   ===================================================================== */
+const APP_NAME = "TD-201 Manager";
+const APP_VERSION = "1.8.2";
+
+// ---------------------------------------------------------------- protocol (td201.py)
+const DEFAULT_BAUD = 115200;
+const BAUDRATES = [2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600];
+const RESOLUTIONS_NM = [10, 100, 1000, 5000];
+const ALARM_BITS = [[0x8000, "MOTOR_RUNNING"], [0x2000, "AUTO_TUNING"], [0x1000, "HOME_MISSING"],
+  [0x0400, "PULSE_DIR_OPEN"], [0x0200, "PULSE_DIR"], [0x0100, "ILLEGAL_CMD"], [0x0080, "PARAMETER_ERR"],
+  [0x0010, "ENCODER_ERR"], [0x0008, "POSITION_ERR"], [0x0004, "ENCODER_Z_ERR"], [0x0001, "OVER_TEMP"]];
+const ERROR_MASK = 0x2000 | 0x0100 | 0x0080 | 0x0010 | 0x0008 | 0x0004 | 0x0001;
+const STREAM_KEYS = ["A", "B", "C"];
+const REPLY_RE = /^[<>](\d{2})([A-Za-z_]+)\s*(.*)$/;
+
+const alarm_names = v => ALARM_BITS.filter(([b]) => v & b).map(([, n]) => n);
+const board_first_axis = a => (a % 2 === 1 ? a : a - 1);
+const ints = s => (s.match(/-?\d+/g) || []).map(Number);
+
+function parse_reply(line, t) {
+  line = line.trim();
+  if (!line) return null;
+  const m = REPLY_RE.exec(line);
+  if (m) {
+    const addr = parseInt(m[1], 10), raw = m[2], rest = m[3].trim();
+    const cmd = STREAM_KEYS.includes(raw) ? raw : raw.toLowerCase();
+    const values = cmd === "status" ? ints(rest.split("(")[0]) : ints(rest);
+    return { addr, cmd, values, value: values.length ? values[0] : null, text: rest, raw: line, t };
+  }
+  if (line.replace(/^[<>]+/, "").toLowerCase().startsWith("ready"))
+    return { addr: null, cmd: "ready", values: [], value: null, text: "", raw: line, t };
+  return null;
+}
+
+// ---------------------------------------------------------------- settings (td201_gui.py)
+const MOTOR_PRESETS = { TULA35: [85, 16], TULA50: [70, 30], TULA70: [45, 30] };
+const DEFAULT_MOTOR = "TULA70";
+const POLL_STATUS_MS = 300, MOVE_IDLE_STOP_S = 1.0, IDLE_CUT_S = 0.3, STREAM_MOVE_END_S = 0.3;
+const MOVE_MAX_S = 600, SEQ_GAP_MS = 30, STREAM_HOLD_GAP_S = 0.03, C_TIME_UNIT_S = 0.001, STREAM_END_S = 0.5;
+const SPANS = [[0.01, "10 ms"], [0.02, "20 ms"], [0.05, "50 ms"], [0.1, "100 ms"], [0.2, "200 ms"], [0.5, "500 ms"],
+  [1, "1 s"], [2, "2 s"], [5, "5 s"], [10, "10 s"], [20, "20 s"], [30, "30 s"], [60, "60 s"], [null, "All"]];
+const DEFAULT_SPAN = "2 s";
+const MONITOR_CMD = "mo", JOG_TARGET = 100000, DEFAULT_JOG_SPEED = 5, DEFAULT_VELOCITY = 10;
+const MOVE_CMDS = ["ma", "mr", "hm", "ptpst", "re", "fo", "bi", "auto"];
+
+const $ = id => document.getElementById(id);
+const now = () => performance.now() / 1000;
+const pad2 = n => String(n).padStart(2, "0");
+const hex4 = v => v.toString(16).toUpperCase().padStart(4, "0");
+const last = a => a[a.length - 1];
+
+function nice_ticks(lo, hi, n = 8) {
+  const span = hi - lo;
+  if (span <= 0) return [lo];
+  const raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  let step = mag;
+  for (const m of [1, 2, 2.5, 5, 10]) { step = m * mag; if (span / step <= n) break; }
+  const out = [];
+  for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-9; v += step) out.push(Math.round(v * 1e10) / 1e10);
+  return out;
+}
+function ceil_lead(v) {
+  if (v <= 0) return 0;
+  const mag = Math.pow(10, Math.floor(Math.log10(v)));
+  return Math.round(Math.ceil(v / mag - 1e-9) * mag);
+}
+function fmt_num(v) {
+  if (Math.abs(v - Math.round(v)) < 1e-9) return String(Math.round(v) || 0);
+  return v.toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
+}
+function bisect_left(a, x) { let lo = 0, hi = a.length; while (lo < hi) { const m = (lo + hi) >> 1; if (a[m] < x) lo = m + 1; else hi = m; } return lo; }
+function bisect_right(a, x) { let lo = 0, hi = a.length; while (lo < hi) { const m = (lo + hi) >> 1; if (x < a[m]) hi = m; else lo = m + 1; } return lo; }
+function stamp() {
+  const d = new Date(), p = pad2;
+  return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+}
+
+// ======================================================================
+// Graph data
+// ======================================================================
+class Trace {
+  constructor() { this.clear(); }
+  clear() {
+    this.tt = []; this.tv = []; this.ct = []; this.cv = []; this.at = []; this.av = [];
+    this.offset = null; this.last_g = 0; this.active = false;
+  }
+  start(t_real, moves_only) {
+    if (this.offset === null) this.offset = -t_real;
+    else if (moves_only && t_real + this.offset > this.last_g + Trace.GAP) this.offset = this.last_g + Trace.GAP - t_real;
+    this.active = true;
+    if (this.tv.length) this.add_tgt(t_real, last(this.tv));
+  }
+  g(t_real) { if (this.offset === null) this.offset = -t_real; return t_real + this.offset; }
+  _add(ts, vs, t_real, v) {
+    let g = this.g(t_real);
+    if (ts.length && g < last(ts)) g = last(ts);
+    ts.push(g); vs.push(v);
+    this.last_g = Math.max(this.last_g, g);
+  }
+  add_cur(t, v) { this._add(this.ct, this.cv, t, v); }
+  add_tgt(t, v) { this._add(this.tt, this.tv, t, v); }
+  add_aux(t, v) { this._add(this.at, this.av, t, v); }
+  empty() { return !this.ct.length && !this.tt.length && !this.at.length; }
+  t_range() {
+    const s = [this.tt, this.ct, this.at].filter(x => x.length);
+    if (!s.length) return [0, 0];
+    return [Math.min(...s.map(x => x[0])), Math.max(...s.map(x => last(x)))];
+  }
+}
+Trace.GAP = 0.02;
+
+class StreamClock {
+  constructor(period = 0.002) { this.period = period; this.last = null; this.prev_arr = null; this.win_t = null; this.win_n = 0; }
+  stamp(t_arr) {
+    if (this.prev_arr === null || t_arr - this.prev_arr > 0.1) {
+      this.prev_arr = t_arr; this.win_t = t_arr; this.win_n = 0; this.last = t_arr; return t_arr;
+    }
+    this.prev_arr = t_arr;
+    this.win_n += 1;
+    if (t_arr - this.win_t >= 0.25 && this.win_n >= 20) {
+      const p = (t_arr - this.win_t) / this.win_n;
+      this.period = 0.7 * this.period + 0.3 * p;
+      this.win_t = t_arr; this.win_n = 0;
+    }
+    let nxt = this.last + this.period;
+    if (nxt > t_arr) nxt = t_arr;
+    else if (t_arr - nxt > 0.06) nxt = t_arr - 0.06;
+    this.last = nxt;
+    return nxt;
+  }
+}
+
+// ---------------------------------------------------------------- position graph
+class PosGraph {
+  constructor(canvas, on_view_change) {
+    this.c = canvas; this.ctx = canvas.getContext("2d");
+    this.L = 74; this.R = 14; this.T = 10; this.B = 28;
+    this.trace = new Trace(); this.span = 2; this.follow = true; this.view_right = null;
+    this.y_manual = null; this.y_latch = null; this.cp_text = ""; this.on_view_change = on_view_change;
+    this._drag = null; this._x = [0, 1]; this._lastTap = 0;
+    new ResizeObserver(() => this.redraw()).observe(canvas);
+    canvas.addEventListener("wheel", e => { e.preventDefault(); this.zoom_x(e.deltaY < 0 ? -1 : 1); }, { passive: false });
+    canvas.addEventListener("pointerdown", e => {
+      const t = performance.now();
+      if (t - this._lastTap < 320) { this._lastTap = 0; this._drag = null; this.set_follow(true); return; }
+      this._lastTap = t;
+      try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+      this._drag = { x: e.clientX, view: this._x.slice(), id: e.pointerId };
+    });
+    canvas.addEventListener("pointermove", e => {
+      const d = this._drag;
+      if (!d || d.id !== e.pointerId || this.span === null) return;
+      if (Math.abs(e.clientX - d.x) < 4 && this.follow) return;
+      const pw = Math.max(1, this.c.clientWidth - this.L - this.R);
+      const dt = (e.clientX - d.x) * (d.view[1] - d.view[0]) / pw;
+      this.follow = false;
+      this.view_right = d.view[1] - dt;
+      if (this.on_view_change) this.on_view_change();
+      this.redraw();
+    });
+    const end = () => { this._drag = null; };
+    canvas.addEventListener("pointerup", end);
+    canvas.addEventListener("pointercancel", end);
+    canvas.addEventListener("dblclick", () => this.set_follow(true));
+  }
+  set_trace(t) { this.trace = t; this.y_latch = null; this.redraw(); }
+  set_span(s) { this.span = s; this.redraw(); }
+  zoom_x(dir) {
+    let i = SPANS.findIndex(([s]) => s === this.span);
+    if (i < 0) i = 6;
+    i = Math.max(0, Math.min(SPANS.length - 1, i + dir));
+    this.span = SPANS[i][0];
+    if (this.on_view_change) this.on_view_change();
+    this.redraw();
+  }
+  set_follow(on) {
+    this.follow = on;
+    if (on) this.view_right = null;
+    else if (this.view_right === null) this.view_right = this._x[1];
+    if (this.on_view_change) this.on_view_change();
+    this.redraw();
+  }
+  zoom_y(f) {
+    const [lo, hi] = this.y_manual || this.y_latch || [-10, 10];
+    const c = (lo + hi) / 2, h = (hi - lo) / 2 * f;
+    this.y_manual = [c - h, c + h];
+    this.redraw();
+  }
+  reset_y() { this.y_manual = null; this.y_latch = null; this.redraw(); }
+  current_y() { return this.y_manual || this.y_latch; }
+
+  redraw() {
+    const cv = this.c, dpr = window.devicePixelRatio || 1;
+    const w = cv.clientWidth, h = cv.clientHeight;
+    if (w < 50 || h < 50) return;
+    if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) {
+      cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+    }
+    const ctx = this.ctx;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+    const { L, R, T, B } = this, pw = w - L - R, ph = h - T - B, tr = this.trace;
+    const [tmin, tmax] = tr.t_range();
+    let x0, x1;
+    if (this.span === null) { x0 = tmin; x1 = Math.max(tmax, tmin + 0.001); }
+    else {
+      if (this.follow || this.view_right === null) x1 = Math.max(tmax, tr.empty() ? this.span : tmax);
+      else x1 = this.view_right;
+      x0 = x1 - this.span;
+    }
+    this._x = [x0, x1];
+    const vis = ts => [Math.max(0, bisect_left(ts, x0) - 1), Math.min(ts.length, bisect_right(ts, x1) + 1)];
+    const [ci0, ci1] = vis(tr.ct);
+    let [ti0, ti1] = vis(tr.tt);
+    if (tr.tt.length && ti0 >= ti1) ti0 = Math.max(0, ti1 - 1);
+
+    let lo, hi;
+    if (this.y_manual) [lo, hi] = this.y_manual;
+    else {
+      let vlo = Infinity, vhi = -Infinity;
+      for (let i = ci0; i < ci1; i++) { const v = tr.cv[i]; if (v < vlo) vlo = v; if (v > vhi) vhi = v; }
+      for (let i = Math.max(0, ti0); i < ti1; i++) { const v = tr.tv[i]; if (v < vlo) vlo = v; if (v > vhi) vhi = v; }
+      if (vlo <= vhi) {
+        const yl = this.y_latch;
+        if (yl) { vlo = Math.min(vlo, yl[0]); vhi = Math.max(vhi, yl[1]); }
+        if (vhi - vlo < 1) { vlo -= 10; vhi += 10; }
+        if (!yl || vlo < yl[0] || vhi > yl[1]) {
+          const m = (vhi - vlo) * 0.08;
+          this.y_latch = !yl ? [vlo - m, vhi + m] :
+            [vlo < yl[0] ? Math.min(yl[0], vlo - m) : yl[0], vhi > yl[1] ? Math.max(yl[1], vhi + m) : yl[1]];
+        }
+        [lo, hi] = this.y_latch;
+      } else { lo = -4000; hi = 4000; }
+    }
+    if (hi <= lo) hi = lo + 1;
+    const X = t => L + (t - x0) / (x1 - x0) * pw;
+    const Y = v => T + (hi - v) / (hi - lo) * ph;
+
+    ctx.font = "12px Roboto, system-ui, Arial, sans-serif";
+    ctx.lineWidth = 1;
+    const yt = nice_ticks(lo, hi, 8);
+    ctx.strokeStyle = "#e2e2e2";
+    ctx.beginPath();
+    for (const v of yt) { const y = Math.round(Y(v)) + 0.5; ctx.moveTo(L, y); ctx.lineTo(L + pw, y); }
+    const unit_ms = (x1 - x0) <= 2.0, xlab = [];
+    for (const t of nice_ticks(x0, x1, 10)) {
+      const x = Math.round(X(t)) + 0.5;
+      ctx.moveTo(x, T); ctx.lineTo(x, T + ph);
+      if (x >= L + 14 && x <= L + pw - 14) xlab.push([x, unit_ms ? fmt_num(t * 1000) : fmt_num(t)]);
+    }
+    ctx.stroke();
+    if (lo < 0 && 0 < hi) {
+      ctx.strokeStyle = "#b8b8b8"; ctx.beginPath(); ctx.moveTo(L, Y(0)); ctx.lineTo(L + pw, Y(0)); ctx.stroke();
+    }
+    ctx.save();
+    ctx.beginPath(); ctx.rect(L, T, pw, ph); ctx.clip();
+    ctx.lineWidth = 1.8; ctx.lineJoin = "round";
+    // target (red, step line)
+    if (tr.tt.length && ti1 > ti0) {
+      const end_t = Math.max(tmax, last(tr.tt));
+      ctx.strokeStyle = "#e00000"; ctx.beginPath();
+      for (let i = ti0; i < ti1; i++) {
+        const t = tr.tt[i], v = tr.tv[i], tn = i + 1 < tr.tt.length ? tr.tt[i + 1] : end_t;
+        if (i === ti0) ctx.moveTo(X(t), Y(v)); else ctx.lineTo(X(t), Y(v));
+        ctx.lineTo(X(tn), Y(v));
+      }
+      ctx.stroke();
+    }
+    // current (blue)
+    const n = ci1 - ci0;
+    if (n >= 2) {
+      const stride = Math.max(1, Math.floor(n / (pw * 2)));
+      ctx.strokeStyle = "#0050e0"; ctx.beginPath();
+      ctx.moveTo(X(tr.ct[ci0]), Y(tr.cv[ci0]));
+      for (let i = ci0 + stride; i < ci1; i += stride) ctx.lineTo(X(tr.ct[i]), Y(tr.cv[i]));
+      ctx.lineTo(X(tr.ct[ci1 - 1]), Y(tr.cv[ci1 - 1]));
+      ctx.stroke();
+    } else if (n === 1) {
+      ctx.fillStyle = "#0050e0"; ctx.beginPath(); ctx.arc(X(tr.ct[ci0]), Y(tr.cv[ci0]), 2.5, 0, 7); ctx.fill();
+    }
+    ctx.restore();
+    // labels and frame
+    ctx.fillStyle = "#222"; ctx.textBaseline = "middle"; ctx.textAlign = "right";
+    for (const v of yt) ctx.fillText(fmt_num(v), L - 6, Y(v));
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    for (const [x, s] of xlab) ctx.fillText(s, x, T + ph + 4);
+    ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+    ctx.fillText(unit_ms ? "Time [ms]" : "Time [s]", 4, h - 2);
+    ctx.strokeStyle = "#7a7a7a"; ctx.lineWidth = 1; ctx.strokeRect(L + 0.5, T + 0.5, pw, ph);
+    if (this.cp_text) {
+      ctx.font = "13px Consolas, 'Roboto Mono', monospace"; ctx.fillStyle = "#303030";
+      ctx.textBaseline = "top"; ctx.fillText(this.cp_text, L + 8, T + 6);
+    }
+    if (!this.follow && this.span !== null) {
+      ctx.font = "12px Roboto, system-ui, Arial, sans-serif"; ctx.fillStyle = "#a06000";
+      ctx.textAlign = "right"; ctx.textBaseline = "top";
+      ctx.fillText("Follow off (double-tap to follow)", L + pw - 6, T + 6);
+    }
+  }
+}
+
+// ======================================================================
+// Serial port (Web Serial in Chrome/Edge, android-serial.js in the app)
+// ======================================================================
+const D = {
+  port: null, writer: null, reader: null, open: false, baudrate: null, name: "", buf: "",
+  dec: new TextDecoder("latin1"), enc: new TextEncoder(), closing: false,
+
+  async connect(baud) {
+    if (!("serial" in navigator)) throw new Error("This browser has no serial port support.\nUse Chrome or Edge (PC) or the Android app.");
+    const port = await navigator.serial.requestPort();
+    await port.open({ baudRate: baud, dataBits: 8, stopBits: 1, parity: "none", bufferSize: 65536 });
+    this.port = port; this.open = true; this.baudrate = baud; this.buf = ""; this.closing = false;
+    const info = port.getInfo ? port.getInfo() : {};
+    this.name = info.name ? info.name.split("  ").slice(0, 2).join(" ")
+      : (info.usbVendorId != null ? "USB " + hex4(info.usbVendorId) + ":" + hex4(info.usbProductId || 0) : "Serial port");
+    this.writer = port.writable.getWriter();
+    this._loop(port);
+  },
+  async _loop(port) {
+    const reader = port.readable.getReader();
+    this.reader = reader;
+    try {
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        if (value && value.length) on_chunk(this.dec.decode(value), value.t != null ? value.t : now());
+      }
+    } catch (e) {
+      if (this.port === port && !this.closing) port_error(e.message || String(e));
+    } finally {
+      try { reader.releaseLock(); } catch (_) {}
+      if (this.reader === reader) this.reader = null;
+    }
+  },
+  async close() {
+    const port = this.port;
+    if (!port) return;
+    this.closing = true; this.open = false; this.port = null;
+    try { if (this.reader) await this.reader.cancel(); } catch (_) {}
+    try { if (this.writer) this.writer.releaseLock(); } catch (_) {}
+    this.writer = null;
+    try { await port.close(); } catch (_) {}
+  },
+  write(text) {
+    if (!this.open || !this.writer) throw new Error("Port is not open");
+    const p = this.writer.write(this.enc.encode(text + "\r"));
+    if (p && p.catch) p.catch(e => { if (this.open) port_error(e.message || String(e)); });
+  },
+  async setBaud(b) {
+    if (!this.port) return;
+    if (this.port.setBaud) { await this.port.setBaud(b); this.baudrate = b; return; }
+    // Web Serial: close and open again at the new speed
+    const port = this.port;
+    this.closing = true;
+    try { if (this.reader) await this.reader.cancel(); } catch (_) {}
+    try { this.writer.releaseLock(); } catch (_) {}
+    await port.close();
+    await port.open({ baudRate: b, bufferSize: 65536 });
+    this.closing = false; this.baudrate = b;
+    this.writer = port.writable.getWriter();
+    this._loop(port);
+  }
+};
+if ("serial" in navigator) navigator.serial.addEventListener("disconnect", () => { if (D.open) port_error("The device has been lost."); });
+
+function on_chunk(text, t) {
+  D.buf += text;
+  for (;;) {
+    const m = /[\r\n]/.exec(D.buf);
+    if (!m) break;
+    const line = D.buf.slice(0, m.index).trim();
+    D.buf = D.buf.slice(m.index + 1);
+    if (line) handle(line, t);
+  }
+  if (D.buf.length > 4096) D.buf = "";
+}
+
+function frame(addr, cmd, params) {
+  return [">" + pad2(addr) + cmd, ...params.map(String)].join(" ");
+}
+
+// ======================================================================
+// Dialogs (do not block: data keeps coming in while a dialog is shown)
+// ======================================================================
+let dlgQueue = Promise.resolve();
+function dlg(title, body, buttons = ["OK"], kind = "", extra = null, defIdx = 0) {
+  const run = () => new Promise(res => {
+    const box = $("dlg"), back = $("dlgBack");
+    box.className = kind;
+    box.querySelector("h3").textContent = title;
+    box.querySelector(".body").textContent = body;
+    const ex = box.querySelector(".extra"); ex.innerHTML = ""; if (extra) ex.append(extra);
+    const bb = box.querySelector(".btns"); bb.innerHTML = "";
+    buttons.forEach((b, i) => {
+      const btn = document.createElement("button");
+      btn.textContent = b;
+      if (i === defIdx) btn.style.fontWeight = "700";
+      btn.onclick = () => { back.classList.remove("on"); res(i); };
+      bb.append(btn);
+    });
+    back.classList.add("on");
+  });
+  const p = dlgQueue.then(run);
+  dlgQueue = p.catch(() => {});
+  return p;
+}
+const ask = async (title, body, kind = "", defCancel = false) =>
+  (await dlg(title, body, ["OK", "Cancel"], kind, null, defCancel ? 1 : 0)) === 0;
+
+function download(name, text, type = "text/plain") {
+  if (window.AndroidHost) { AndroidHost.saveFile(name, text, type); return; }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type }));
+  a.download = name; document.body.append(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  set_status("Saved " + name);
+}
+
+// ======================================================================
+// Application state
+// ======================================================================
+const S = {
+  cache: {}, traces: {}, alarm: {}, cp: {}, tp: {},
+  move_poll: false, poll_addr: null, poll_started: 0, poll_until: null, poll_idle_stop: true,
+  idle: {}, cp_pending_poll: {}, al_pending_poll: {}, al_pending_manual: {},
+  last_al_req: 0, al_out: null, stream_seen: {}, stream_clock: {}, stream_cycle: {}, stream_session: new Set(),
+  ctime: {}, move_cmd_t: {}, cval: {}, ptp: null, stop_pending: new Set(), jog: null,
+  home_warned: new Set(), jog_axes: new Set(), baud_check: null, seq_after: null,
+  last_draw: 0, graph_dirty: true, live_i: -1, rel_sent: {}, stream_on: [false, false],
+  baud: DEFAULT_BAUD, logq: [], log_lines: 0
+};
+const cacheOf = a => (S.cache[a] = S.cache[a] || {});
+const trace = a => (S.traces[a] = S.traces[a] || new Trace());
+const clock = a => (S.stream_clock[a] = S.stream_clock[a] || new StreamClock());
+const inc = (o, a) => { o[a] = (o[a] | 0) + 1; };
+const movesOnly = () => $("v_movesonly").checked;
+let graph;
+
+// ---------------------------------------------------------------- helpers
+function num(id, name) {
+  const s = String($(id).value).trim().replace(/,/g, "");
+  const v = s === "" ? NaN : Number(s);
+  if (!isFinite(v)) { set_status(`Invalid number in '${name}'`, true); return null; }
+  return Math.round(v);
+}
+function setv(id, v) {
+  const e = $(id);
+  if (e.tagName === "SELECT" && ![...e.options].some(o => o.value === String(v))) e.add(new Option(String(v), String(v)));
+  e.value = String(v);
+  if (id === "v_vel") vel_to_scale();
+}
+function sender(cmd, id, name, board = false) {
+  return () => { const v = num(id, name); if (v !== null) tx_sel(cmd, [v], board); };
+}
+/* spin box: [-] value [+]. The arrows change the value and send it (like the PC program). */
+function wireSpin(id, step, send) {
+  const span = document.querySelector(`.spin[data-id="${id}"]`);
+  const m = document.createElement("button"), p = document.createElement("button"), i = document.createElement("input");
+  m.textContent = "−"; p.textContent = "+";
+  i.type = "number"; i.id = id; i.step = "any";
+  span.append(m, i, p);
+  const bump = d => {
+    const v = num(id, id) ?? 0;
+    i.value = String(v + d * step);
+    if (id === "v_vel") vel_to_scale();
+    if (send) send();
+  };
+  m.onclick = () => bump(-1); p.onclick = () => bump(+1);
+  if (send) onEnter(i, send);
+  return i;
+}
+function onEnter(el, fn) { el.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); fn(); } }); }
+
+// ---------------------------------------------------------------- Configuration
+function apply_preset(name) {
+  const [freq, volt] = MOTOR_PRESETS[name];
+  document.querySelector(`input[name=motor][value=${name}]`).checked = true;
+  $("v_freq").value = freq; $("v_volt").value = volt;
+  $("v_ol_freq").value = freq; $("v_ol_volt").value = volt;
+}
+const encVal = () => Number(document.querySelector("input[name=enc]:checked").value);
+
+function set_configuration() {
+  const axes = targets();
+  const vals = [num("v_freq", "Driving Frequency"), num("v_volt", "Voltage"), num("v_res", "Resolution")];
+  if (vals.includes(null) || !axes.length) {
+    if (!axes.length) set_status("No axis checked (Address #1 / #2)", true);
+    return;
+  }
+  const [freq, volt, res] = vals, seq = [];
+  for (const b of [...new Set(axes.map(board_first_axis))].sort((x, y) => x - y)) seq.push([b, "volt", [volt]]);
+  for (const a of axes)
+    seq.push([a, "enc", [encVal()]], [a, "freq", [freq]], [a, "res", [res]],
+      [a, "swap", [$("v_swap").checked ? 1 : 0]], [a, "mid", [$("v_mid").checked ? 1 : 0]]);
+  send_seq(seq);
+}
+async function auto_tuning() {
+  const axes = targets();
+  if (!connected() || !axes.length) {
+    if (!axes.length) set_status("No axis checked (Address #1 / #2)", true);
+    return;
+  }
+  if (axes.length > 1 && !(await ask("Auto-Tuning",
+    `Both axes are checked (${axes.map(pad2).join(" + ")}).\n\nAuto-tuning should be done one axis at a time.\n` +
+    "Run auto-tuning on both axes at the same time anyway?", "warn", true))) return;
+  for (const a of axes) tx(a, "auto");
+  begin_move(axes, false);
+}
+async function reset_board() {
+  const boards = [...new Set((targets().length ? targets() : [addr()]).map(board_first_axis))].sort((x, y) => x - y);
+  const text = boards.map(b => pad2(b) + "/" + pad2(b + 1)).join(", ");
+  if (await ask("Reset", `Warm-start the board of axis ${text}?`)) for (const b of boards) tx(b, "reset");
+}
+function check_home(a, value) {
+  if (S.home_warned.has(a)) return;
+  S.home_warned.add(a);
+  if (value & 0x1000)
+    dlg("Home missing", `Axis ${pad2(a)}: HOME_MISSING (status 0x${hex4(value)})\n\nThe home position is not set.\n` +
+      "Run Auto-Tuning (Configuration tab) or Home (Motor Control tab)\nbefore closed-loop moves.", ["OK"], "warn");
+}
+function monitor_off(axes) {
+  for (const x of axes) cacheOf(x)[MONITOR_CMD] = [0];
+  sync_stream_checks();
+}
+function reset_reply(a) {
+  const b = board_first_axis(a);
+  monitor_off([b, b + 1]);
+  S.home_warned.delete(b); S.home_warned.delete(b + 1);
+  logline(`# Reset ${pad2(b)}/${pad2(b + 1)} - Monitor OFF (switch it ON again if needed)`, "info");
+}
+function reset_ready() {
+  monitor_off(Object.keys(S.cache).map(Number).filter(x => (S.cache[x][MONITOR_CMD] || [0])[0]));
+  S.home_warned.clear();
+  set_status("Controller ready (reset done)");
+  setTimeout(() => send_seq([[addr(), "info", []]]), 200);
+}
+function get_information() {
+  const a = addr();
+  send_seq([[a, "info", []], [a, "ver", []]], 120);
+}
+function toggle_advanced() {
+  const open = $("adv").classList.toggle("open");
+  $("advBtn").innerHTML = open ? "Advanced &#9650;" : "Advanced &#9660;";
+}
+function vel_to_scale() {
+  const v = Number($("v_vel").value);
+  if (isFinite(v) && v >= 1 && v <= 100 && Math.abs(Number($("vel_scale").value) - v) >= 1) $("vel_scale").value = v;
+}
+
+// ---------------------------------------------------------------- axis
+function addr() {
+  for (let i = 1; i <= 2; i++) if ($("ax" + i).checked) return Number($("ad" + i).value);
+  return Number($("ad1").value);
+}
+function targets() {
+  const out = [];
+  for (let i = 1; i <= 2; i++) {
+    const a = Number($("ad" + i).value);
+    if ($("ax" + i).checked && !out.includes(a)) out.push(a);
+  }
+  return out;
+}
+function slot_of(a) {
+  for (let i = 1; i <= 2; i++) if (Number($("ad" + i).value) === a) return i;
+  return null;
+}
+function tx_sel(cmd, params = [], board = false) {
+  let axes = targets();
+  if (!axes.length) { set_status("No axis checked (Address #1 / #2)", true); return false; }
+  if (board) axes = [...new Set(axes.map(board_first_axis))].sort((x, y) => x - y);
+  let ok = true;
+  for (const a of axes) ok = tx(a, cmd, params) && ok;
+  return ok;
+}
+const disp_sel = () => Number(document.querySelector("input[name=disp]:checked").value);
+const set_disp_sel = i => { document.querySelector(`input[name=disp][value="${i}"]`).checked = true; };
+const display_addr = () => Number($("ad" + disp_sel()).value);
+
+function axis_changed(initial = false) {
+  const a = addr();
+  for (const e of document.querySelectorAll(".test input")) {
+    const s = e.value;
+    if (s.length >= 3 && s[0] === ">" && /^\d\d$/.test(s.slice(1, 3))) e.value = ">" + pad2(a) + s.slice(3);
+  }
+  set_disp_sel(slot_of(a) || 1);
+  display_changed();
+  sync_stream_checks();
+  fill_fields(a);
+  show_alarm();
+  show_pos();
+  update_conn_label();
+  if (!initial && connected(true)) {
+    const axes = targets().length ? targets() : [a];
+    send_seq([...axes.map(x => [x, "info", []]), ...axes.map(x => [x, "al", []])], 120, true);
+  }
+}
+function stream_toggle(i) {
+  const a = Number($("ad" + (i + 1)).value), on = S.stream_on[i] ? 0 : 1;
+  if (tx(a, MONITOR_CMD, [on])) {
+    cacheOf(a)[MONITOR_CMD] = [on];
+    S.stream_on[i] = !!on;
+    paint_stream(i);
+  }
+}
+function sync_stream_checks() {
+  for (let i = 0; i < 2; i++) {
+    const d = (S.cache[Number($("ad" + (i + 1)).value)] || {})[MONITOR_CMD];
+    S.stream_on[i] = !!(d && d[0]);
+    paint_stream(i);
+  }
+}
+function paint_stream(i) {
+  const a = Number($("ad" + (i + 1)).value), on = S.stream_on[i], b = $("mon" + (i + 1));
+  b.textContent = pad2(a) + (on ? " ON" : " OFF");
+  b.classList.toggle("on", on);
+}
+function display_changed() {
+  graph.set_trace(trace(display_addr()));
+  show_pos();
+}
+
+// ---------------------------------------------------------------- connection
+function connected(quiet = false) {
+  if (D.open) return true;
+  if (!quiet) set_status("Not connected - use the Port button", true);
+  return false;
+}
+function port_dialog() {
+  const box = document.createElement("div");
+  box.style.cssText = "display:grid;grid-template-columns:auto 1fr;gap:10px 12px;align-items:center;margin-bottom:14px";
+  const sel = document.createElement("select");
+  for (const b of BAUDRATES) sel.add(new Option(String(b), String(b)));
+  sel.value = String(S.baud);
+  const lab = document.createElement("span"); lab.textContent = "Baud rate";
+  const st = document.createElement("div");
+  st.style.cssText = "grid-column:1/-1;font-weight:700;color:" + (D.open ? "var(--ok)" : "var(--err)");
+  st.textContent = D.open ? `Connected: ${D.name}  ${D.baudrate} bps` : "Not connected";
+  box.append(lab, sel, st);
+  const body = window.AndroidSerial
+    ? "USB-UART adapter on the OTG cable (115200 8N1 by default).\nAllow the USB permission when asked."
+    : "Choose the COM port in the browser's port list.";
+  dlg("Connect", body, ["Connect", "Disconnect", "Cancel"], "", box).then(async i => {
+    if (i === 0) { S.baud = Number(sel.value); await do_connect(); }
+    else if (i === 1) await do_disconnect();
+  });
+  // Disconnect only when connected
+  setTimeout(() => { const b = $("dlg").querySelectorAll(".btns button")[1]; if (b) b.disabled = !D.open; }, 0);
+}
+async function do_connect() {
+  if (D.open) await do_disconnect();
+  try {
+    await D.connect(S.baud);
+  } catch (e) {
+    if (e && e.name === "NotFoundError" && /No port selected|No port selected by the user/i.test(e.message || "")) {
+      set_status("No port selected"); update_conn_label(); return;
+    }
+    dlg("Port", "Cannot open the port:\n" + ((e && e.message) || e), ["OK"], "error");
+    update_conn_label();
+    return;
+  }
+  logline(`# Connected ${D.name} @ ${S.baud}`, "info");
+  S.home_warned = new Set();
+  update_conn_label();
+  const a = addr(), axes = targets().length ? targets() : [a];
+  send_seq([[a, "ver", []], ...axes.map(x => [x, "al", []]), ...axes.map(x => [x, "info", []])], 120, true);
+}
+async function do_disconnect() {
+  if (D.port) { await D.close(); logline("# Disconnected", "info"); }
+  S.move_poll = false; S.ptp = null;
+  if (S.jog) S.jog = null;
+  update_conn_label();
+}
+function port_error(msg) {
+  if (!D.port && !D.open) return;
+  logline("# Port error: " + msg, "err");
+  do_disconnect();
+  dlg("Port", "Serial port error:\n" + msg, ["OK"], "error");
+}
+function axes_text() { const t = targets(); return t.length ? t.map(pad2).join("+") : "none"; }
+function update_conn_label() {
+  const c = $("conn");
+  if (D.open) { c.textContent = `${D.name}  ${D.baudrate} bps  |  Axis ${axes_text()}`; c.className = "ok"; }
+  else { c.textContent = `Not connected  |  Axis ${axes_text()}`; c.className = "err"; }
+}
+
+// ---------------------------------------------------------------- sending
+function tx(a, cmd, params = [], poll = false) {
+  if (!connected()) return false;
+  let text;
+  try {
+    text = frame(a, cmd, params);
+    D.write(text);
+    if (MOVE_CMDS.includes(cmd)) S.move_cmd_t[a] = now();
+  } catch (e) {
+    logline("# Send error: " + (e.message || e), "err");
+    do_disconnect();
+    return false;
+  }
+  if (!poll || $("v_logpoll").checked) logline(text, "tx");
+  if (!poll) set_status("Sent " + text);
+  return true;
+}
+function send_seq(items, gap_ms = SEQ_GAP_MS, manual_al = false) {
+  items = items.slice();
+  const step = () => {
+    if (!items.length) return;
+    const [a, cmd, params] = items.shift();
+    if (cmd === "al" && manual_al) inc(S.al_pending_manual, a);
+    tx(a, cmd, params);
+    S.seq_after = items.length ? setTimeout(step, gap_ms) : null;
+  };
+  step();
+}
+function send_test(input) {
+  let text = input.value.trim();
+  if (!text || !connected()) return;
+  if (!text.startsWith(">")) text = ">" + text;
+  try {
+    D.write(text);
+    const m = /^>(\d\d)([a-z]+)/.exec(text);
+    if (m && MOVE_CMDS.includes(m[2])) S.move_cmd_t[Number(m[1])] = now();
+    logline(text, "tx");
+  } catch (e) {
+    logline("# Send error: " + (e.message || e), "err");
+    do_disconnect();
+  }
+}
+function read_status() {
+  for (const a of targets()) { inc(S.al_pending_manual, a); tx(a, "al"); }
+}
+
+// ---------------------------------------------------------------- moves
+function move_axes() {
+  const axes = targets();
+  if (!axes.length) { set_status("No axis checked (Address #1 / #2)", true); return null; }
+  if (!connected()) return null;
+  return axes;
+}
+function begin_move(axes, idle_stop = true) {
+  const n = now();
+  for (const a of axes) {
+    if (!jogging(a)) S.jog_axes.delete(a);
+    trace(a).start(n, movesOnly());
+    S.idle[a] = { ref: S.cp[a] ?? null, t: n, paused: false };
+  }
+  start_move_poll(axes[0], idle_stop);
+}
+function move_abs() {
+  const axes = move_axes(), p = num("v_abs", "Absolute target step");
+  if (!axes || p === null) return;
+  S.ptp = null;
+  begin_move(axes);
+  for (const a of axes) { S.tp[a] = p; tx(a, "ma", [p]); }
+  show_pos();
+}
+function move_rel(sign) {
+  const axes = move_axes();
+  let d = num("v_rel", "Relative target step");
+  if (!axes || d === null) return;
+  d *= sign;
+  S.ptp = null;
+  begin_move(axes);
+  S.rel_sent = {};
+  for (const a of axes) {
+    const base = S.tp[a] ?? S.cp[a];
+    if (base != null) S.tp[a] = base + d;
+    S.rel_sent[a] = d;
+    tx(a, "mr", [d]);
+  }
+  show_pos();
+}
+function home() {
+  const axes = move_axes();
+  if (!axes) return;
+  S.ptp = null;
+  begin_move(axes);
+  for (const a of axes) tx(a, "hm");
+}
+function stop() {
+  S.ptp = null;
+  for (const a of targets()) S.stop_pending.add(a);
+  tx_sel("st");
+}
+
+// ---------------------------------------------------------------- jog
+function jog_press(d) {
+  if (S.jog) return false;
+  const axes = move_axes();
+  if (!axes) return false;
+  const speed = String($("v_jogvel").value).trim() ? num("v_jogvel", "Jog speed") : null;
+  const normal = num("v_vel", "Velocity");
+  const restore = (speed && normal && speed !== normal) ? normal : null;
+  S.jog = { addrs: axes, restore };
+  for (const a of axes) S.jog_axes.add(a);
+  S.ptp = null;
+  begin_move(axes, false);
+  const seq = [];
+  if (restore !== null) for (const a of axes) seq.push([a, "vel", [speed]]);
+  for (const a of axes) seq.push([a, "ma", [jog_target(a, d)]]);
+  send_seq(seq, 5);
+  set_status(`Jog ${d > 0 ? "+" : "-"} on axis ${axes_text()} (release to stop)`);
+  show_pos();
+  return true;
+}
+function jog_target(a, d) {
+  const lim = (S.cache[a] || {})[d > 0 ? "lp" : "lm"];
+  if (lim && lim[0] !== 0 && (lim[0] > 0) === (d > 0)) return lim[0];
+  return JOG_TARGET * d;
+}
+function jog_release() {
+  const j = S.jog;
+  for (const b of document.querySelectorAll(".jogb")) b.classList.remove("held");
+  if (!j) return;
+  S.jog = null;
+  const axes = j.addrs;
+  if (S.seq_after) { clearTimeout(S.seq_after); S.seq_after = null; }
+  for (const a of axes) S.stop_pending.add(a);
+  S.poll_idle_stop = true;
+  const seq = axes.map(a => [a, "st", []]);
+  if (j.restore !== null) for (const a of axes) seq.push([a, "vel", [j.restore]]);
+  send_seq(seq, 5);
+  for (const a of axes) setTimeout(() => jog_done(a), 1500);
+}
+const jogging = a => !!(S.jog && S.jog.addrs.includes(a));
+function jog_done(a) {
+  if (S.stream_session.has(a)) { setTimeout(() => jog_done(a), 500); return; }
+  if (S.jog_axes.has(a) && !jogging(a)) { S.jog_axes.delete(a); target_to_cp(a); }
+}
+function target_to_cp(a) {
+  const v = S.cp[a];
+  if (v == null) { delete S.tp[a]; show_pos(); return; }
+  S.tp[a] = v;
+  show_pos();
+}
+function ptp_start() {
+  const axes = move_axes();
+  const vals = [num("v_t1", "Target1"), num("v_t2", "Target2"), num("v_iv", "Interval")];
+  if (!axes || vals.includes(null)) return;
+  const [t1, t2, iv] = vals;
+  S.ptp = { addrs: axes };
+  begin_move(axes, false);
+  const seq = [];
+  for (const a of axes) { S.tp[a] = t1; seq.push([a, "ptpp", [t1, t2]], [a, "ptptm", [iv]]); }
+  for (const a of axes) seq.push([a, "ptpst", []]);
+  send_seq(seq);
+}
+
+// ---------------------------------------------------------------- polling
+function start_move_poll(a, idle_stop = true) {
+  const n = now(), tr = trace(a), st = S.idle[a];
+  if (!tr.active || (st && st.paused)) tr.start(n, movesOnly());
+  S.idle[a] = { ref: S.cp[a] ?? null, t: n, paused: false };
+  S.move_poll = true; S.poll_addr = a; S.poll_started = n; S.poll_until = null; S.poll_idle_stop = idle_stop;
+  if (!targets().includes(display_addr()) && slot_of(a)) { set_disp_sel(slot_of(a)); display_changed(); }
+  S.graph_dirty = true;
+}
+function stop_move_poll() {
+  const a = S.poll_addr;
+  S.move_poll = false; S.poll_until = null;
+  if (a !== null && !S.stream_session.has(a)) trace(a).active = false;
+}
+function tick() {
+  const n = now();
+  if (D.open) {
+    if (S.move_poll) {
+      if (S.poll_until !== null && n >= S.poll_until) stop_move_poll();
+      else if (n - S.poll_started > MOVE_MAX_S) stop_move_poll();
+      else {
+        const a = S.poll_addr, held = jogging(a);
+        const still_t = S.idle[a] ? S.idle[a].t : S.poll_started;
+        const seen = S.stream_seen[a] ?? -9;
+        if (held || S.ptp !== null) { /* keep polling */ }
+        else if (seen > S.poll_started && n - seen > STREAM_MOVE_END_S) stop_move_poll();
+        else if (S.poll_idle_stop && n - S.poll_started > 1.0 && n - still_t > MOVE_IDLE_STOP_S) stop_move_poll();
+      }
+    }
+    if ($("v_live").checked) {
+      if (S.al_out !== null && n - S.al_out > 1.0) { S.al_out = null; S.al_pending_poll = {}; }
+      const axes = (targets().length ? targets() : [addr()]).filter(x => !jogging(x));
+      if (axes.length && S.al_out === null && n - S.last_al_req >= POLL_STATUS_MS / 1000) {
+        S.live_i = (S.live_i + 1) % axes.length;
+        const a = axes[S.live_i];
+        inc(S.al_pending_poll, a);
+        S.al_out = n; S.last_al_req = n;
+        tx(a, "al", [], true);
+      }
+    }
+  }
+  end_stream_sessions(n);
+  if (S.graph_dirty && n - S.last_draw > 0.04) {
+    S.graph_dirty = false; S.last_draw = n;
+    graph.redraw();
+    update_y_entries();
+  }
+  flush_log();
+}
+
+// ---------------------------------------------------------------- receiving
+function handle(line, t) {
+  const r = parse_reply(line, t);
+  if (!r) { logline(line, "rx"); return; }
+  const a = r.addr, cmd = r.cmd;
+  let quiet = false;
+  if (cmd === "cp" && r.value !== null) {
+    if ((S.cp_pending_poll[a] | 0) > 0) { S.cp_pending_poll[a]--; quiet = true; }
+    on_cp(a, r.value, t);
+  } else if (STREAM_KEYS.includes(cmd) && r.value !== null) {
+    quiet = true;
+    on_stream(a, cmd, r.value, t);
+  } else if (cmd === "status" && r.value !== null) {
+    const jg = jogging(a);
+    if (!jg) { S.alarm[a] = r.value; check_home(a, r.value); }
+    if ((S.al_pending_poll[a] | 0) > 0) { S.al_pending_poll[a]--; S.al_out = null; quiet = true; }
+    else if ((S.al_pending_manual[a] | 0) > 0) S.al_pending_manual[a]--;
+    else {
+      // unsolicited status = motion finished
+      if (S.move_poll && a === S.poll_addr && S.ptp === null) S.poll_until = now() + 0.25;
+      if (S.stop_pending.has(a)) { S.stop_pending.delete(a); setTimeout(() => target_to_cp(a), 60); }
+    }
+    if (!jg && (targets().includes(a) || a === addr())) show_alarm();
+  } else if (cmd === "ma" && r.value !== null) S.tp[a] = r.value;
+  else if (cmd === "mr" && r.value !== null) {
+    const sent = S.rel_sent[a];
+    if (sent != null && sent !== r.value) S.tp[a] = r.value;      // firmware returned the absolute target
+  } else if (cmd === "ver") cacheOf(a).ver = r.values;
+  else if (cmd === "baudrate" && r.value !== null) cacheOf(a).baudrate = r.values;
+  else if (cmd === "ready") reset_ready();
+  else if (cmd === "reset") reset_reply(a);
+  else if (cmd === "st" && !r.values.length) { /* stop echo */ }
+  else if (r.values.length) {
+    cacheOf(a)[cmd] = r.values;
+    if (cmd === "volt") { cacheOf(board_first_axis(a) + 1).volt = r.values; cacheOf(board_first_axis(a)).volt = r.values; }
+    else if (cmd === MONITOR_CMD) sync_stream_checks();
+  }
+  if (a !== null && a === addr()) fill_fields(a, cmd);
+  if (S.baud_check && (cmd === "ver" || cmd === "baudrate")) baud_reply(cmd);
+  if (!quiet || $("v_logpoll").checked) logline(line, "rx");
+}
+function on_stream(a, key, v, t) {
+  S.stream_seen[a] = t;
+  let cyc = S.stream_cycle[a];
+  if (cyc && key in cyc.vals) { commit_cycle(a, cyc, null); cyc = null; }   // new cycle without a C
+  if (!cyc) { cyc = { vals: {}, t }; S.stream_cycle[a] = cyc; }
+  cyc.vals[key] = v;
+  cyc.t = t;
+  if (key === "C") { commit_cycle(a, cyc, v); S.stream_cycle[a] = null; }
+}
+function commit_cycle(a, cyc, c) {
+  const arr = cyc.t, vals = cyc.vals;
+  let st = S.ctime[a], ts;
+  if (c !== null && $("v_ctime").checked) {
+    const jump = st != null && ((c - st.last_c) * C_TIME_UNIT_S - (arr - st.last_arr)) > 0.2;
+    if (st == null || c < st.last_c || arr - st.last_arr > 0.5 || jump) {
+      // new move: C restarted. Anchor C=0 to the move command if we sent it.
+      let base = arr - c * C_TIME_UNIT_S;
+      const cmd_t = S.move_cmd_t[a];
+      if (cmd_t != null && arr - cmd_t >= 0 && arr - cmd_t < 0.5) base = Math.min(base, cmd_t + 0.001);
+      st = { base, c0: c, arr0: arr, n: 0 };
+      S.ctime[a] = st;
+      if (trace(a).active && movesOnly()) trace(a).start(base + c * C_TIME_UNIT_S, true);
+    }
+    st.last_c = c; st.last_arr = arr; st.n += 1;
+    ts = st.base + c * C_TIME_UNIT_S;
+  } else ts = clock(a).stamp(arr);
+
+  const tr = trace(a);
+  if (!tr.active) tr.start(ts, movesOnly());          // move started elsewhere (Test line, PTP ...)
+  S.stream_session.add(a);
+  if ("A" in vals && !S.jog_axes.has(a)) {
+    const v = vals.A;
+    if (!tr.tv.length || last(tr.tv) !== v) { rec_gate(a, ts, null, true); tr.add_tgt(ts, v); }
+    S.tp[a] = v;
+  }
+  if ("B" in vals) on_stream_b(a, vals.B, ts);
+  if (c !== null) {
+    S.cval[a] = c;
+    if (!(S.idle[a] && S.idle[a].paused)) tr.add_aux(ts, c);
+  }
+  S.graph_dirty = true;
+}
+function end_stream_sessions(n) {
+  for (const a of [...S.stream_session]) {
+    if (n - (S.stream_seen[a] ?? -9) > STREAM_END_S) {
+      const cyc = S.stream_cycle[a];
+      delete S.stream_cycle[a];
+      if (cyc && Object.keys(cyc.vals).length) commit_cycle(a, cyc, null);
+      S.stream_session.delete(a);
+      if (S.jog_axes.has(a) && !jogging(a)) { S.jog_axes.delete(a); target_to_cp(a); }
+      const st = S.ctime[a];
+      delete S.ctime[a];
+      if (st && st.n >= 2) {
+        const dc = st.last_c - st.c0, dt = st.last_arr - st.arr0;
+        const rate = dt > 0.1 ? ` , dC/dt(PC) ${(dc / (dt * 1000)).toFixed(2)}` : "";
+        logline(`# Axis ${pad2(a)} stream: ${st.n} samples, C ${st.c0} -> ${st.last_c}${rate}`, "info");
+      }
+      const keep = S.move_poll && S.poll_addr === a;
+      if (!keep) trace(a).active = false;
+    }
+  }
+}
+function rec_gate(a, t, cur = null, tgt_changed = false) {
+  let st = S.idle[a];
+  if (!st) st = S.idle[a] = { ref: cur, t, paused: false };
+  const inp = cacheOf(a).inp;
+  const band = Math.max(inp ? Math.abs(inp[0]) : 10, 2);
+  if (cur !== null && st.ref == null) st.ref = cur;
+  const moved = tgt_changed || (cur !== null && Math.abs(cur - st.ref) > band);
+  if (moved) {
+    if (cur !== null) st.ref = cur;
+    st.t = Math.max(st.t, t);
+    if (st.paused) { st.paused = false; trace(a).start(t, movesOnly()); }
+    return true;
+  }
+  if (!movesOnly()) return true;
+  if (t - st.t > IDLE_CUT_S) { st.paused = true; return false; }
+  return !st.paused;
+}
+function on_cp(a, v) {
+  S.cp[a] = v;
+  if (a === display_addr() || targets().includes(a)) show_pos();
+}
+function on_stream_b(a, v, t) {
+  S.cp[a] = v;
+  const tr = trace(a);
+  if (tr.active && rec_gate(a, t, v)) {
+    if (tr.ct.length && tr.g(t) - last(tr.ct) > STREAM_HOLD_GAP_S) tr.add_cur(t - 0.001, last(tr.cv));   // hold step
+    tr.add_cur(t, v);
+    S.graph_dirty = true;
+  }
+  if (a === display_addr() || targets().includes(a)) show_pos();
+}
+
+// ---------------------------------------------------------------- field update
+function fill_fields(a, only) {
+  const c = S.cache[a] || {};
+  const has = k => (only === undefined || only === k) && c[k] && c[k].length;
+  const set = (id, k) => { if (has(k)) setv(id, c[k][0]); };
+  set("v_freq", "freq"); set("v_ol_freq", "freq"); set("v_volt", "volt"); set("v_ol_volt", "volt");
+  set("v_ol_duty", "duty"); set("v_res", "res"); set("v_vel", "vel"); set("v_offset", "offset");
+  set("v_inp", "inp"); set("v_on", "on"); set("v_off", "off"); set("v_cy", "cy");
+  if (has("enc") && (c.enc[0] === 1 || c.enc[0] === 2)) document.querySelector(`input[name=enc][value="${c.enc[0]}"]`).checked = true;
+  if (has("swap")) $("v_swap").checked = !!c.swap[0];
+  if (has("mid")) $("v_mid").checked = !!c.mid[0];
+  if (has("message")) $("v_msg").checked = !!c.message[0];
+  if (has("freq"))
+    for (const [name, [fq]] of Object.entries(MOTOR_PRESETS))
+      if (fq === c.freq[0]) document.querySelector(`input[name=motor][value=${name}]`).checked = true;
+  for (const k of ["ver", "lm", "lp"]) {
+    if (only !== undefined && only !== k) continue;
+    const vals = c[k], lab = $("i_" + k);
+    if (!vals || !vals.length) { if (only === undefined) lab.textContent = "-"; continue; }
+    lab.textContent = k === "ver" ? vals.join(" / ") : String(vals[0]);
+  }
+}
+function show_alarm() {
+  const axes = targets().length ? targets() : [addr()], box = $("stRows");
+  box.innerHTML = "";
+  for (const a of axes.slice(0, 2)) {
+    const v = S.alarm[a], row = document.createElement("div"), hx = document.createElement("span"),
+      fl = document.createElement("span"), ps = document.createElement("div");
+    row.className = "st-row"; hx.className = "st-hex"; fl.className = "st-fl"; ps.className = "st-pos";
+    ps.id = "pos_" + a;
+    if (v === undefined) { hx.textContent = `${pad2(a)} 0x----`; hx.style.color = "#606060"; fl.textContent = "-"; }
+    else {
+      const names = alarm_names(v), err = !!(v & ERROR_MASK);
+      hx.textContent = `${pad2(a)} 0x${hex4(v)}`; hx.style.color = err ? "#c00000" : "#007000";
+      fl.textContent = names.length ? names.join(", ") : "OK";
+      fl.style.color = err ? "#c00000" : "";
+    }
+    row.append(hx, fl);
+    box.append(row, ps);
+  }
+  show_pos();
+}
+function show_pos() {
+  const a = display_addr();
+  const cp = S.cp[a];
+  let tp = S.tp[a];
+  if (S.jog_axes.has(a)) tp = "jog";
+  let txt = `Axis ${pad2(a)}   C.P. ${cp == null ? "-" : cp}   T.P. ${tp == null ? "-" : tp}`;
+  if (S.cval[a] != null) txt += ($("v_ctime").checked ? "   t " + S.cval[a] + " ms" : "   C " + S.cval[a]);
+  graph.cp_text = txt;
+  for (const sa of (targets().length ? targets() : [addr()])) {
+    const ps = $("pos_" + sa);
+    if (!ps) continue;
+    let stp = S.tp[sa];
+    if (S.jog_axes.has(sa)) stp = "jog";
+    ps.textContent = `C.P. ${S.cp[sa] == null ? "-" : S.cp[sa]}   T.P. ${stp == null ? "-" : stp}`;
+  }
+  S.graph_dirty = true;
+}
+
+// ---------------------------------------------------------------- graph controls
+function graph_view_changed() {
+  $("v_follow").checked = graph.follow;
+  const s = SPANS.find(([x]) => x === graph.span);
+  if (s) $("v_span").value = s[1];
+  S.graph_dirty = true;
+}
+function span_selected() {
+  const s = SPANS.find(([, l]) => l === $("v_span").value);
+  graph.set_span(s ? s[0] : 2);
+}
+function graph_full_view() {
+  $("v_span").value = "All";
+  span_selected();
+  const c = S.cache[display_addr()] || {}, lm = c.lm, lp = c.lp;
+  if (lm && lp && lp[0] > lm[0]) {
+    graph.y_manual = [lm[0] < 0 ? -ceil_lead(-lm[0]) : lm[0], lp[0] > 0 ? ceil_lead(lp[0]) : lp[0]];
+    graph.redraw();
+  } else {
+    graph.reset_y();
+    set_status("Stroke limits unknown (Get_Information) - Y range auto");
+  }
+  update_y_entries(true);
+}
+function graph_set_y() {
+  const lo = num("v_ylo", "Y min"), hi = num("v_yhi", "Y max");
+  if (lo === null || hi === null || hi <= lo) { set_status("Y range: enter min < max", true); return; }
+  graph.y_manual = [lo, hi];
+  graph.redraw();
+}
+function update_y_entries(force = false) {
+  const f = document.activeElement;
+  if (!force && (f === $("v_ylo") || f === $("v_yhi"))) return;
+  const y = graph.current_y();
+  if (y) { $("v_ylo").value = fmt_num(Math.round(y[0])); $("v_yhi").value = fmt_num(Math.round(y[1])); }
+}
+function graph_clear() {
+  const a = display_addr(), tr = trace(a), active = tr.active;
+  tr.clear();
+  if (active) tr.start(now(), movesOnly());
+  graph.set_trace(tr);
+  graph.set_follow(true);
+}
+function save_csv() {
+  const a = display_addr(), tr = trace(a);
+  if (tr.empty()) { set_status("Graph is empty", true); return; }
+  const ev = [];
+  tr.tt.forEach((t, i) => ev.push([t, 0, tr.tv[i]]));
+  tr.ct.forEach((t, i) => ev.push([t, 1, tr.cv[i]]));
+  tr.at.forEach((t, i) => ev.push([t, 2, tr.av[i]]));
+  ev.sort((x, y) => x[0] - y[0] || x[1] - y[1]);
+  let tgt = "", cur = "", aux = "";
+  const out = ["time_ms,target,current,C"];
+  for (const [t, k, v] of ev) {
+    if (k === 0) tgt = v; else if (k === 1) cur = v; else aux = v;
+    out.push(`${(t * 1000).toFixed(3)},${tgt},${cur},${aux}`);
+  }
+  download(`td201_axis${pad2(a)}_${stamp()}.csv`, out.join("\n") + "\n", "text/csv");
+}
+
+// ---------------------------------------------------------------- baud rate
+async function change_baud() {
+  const a = addr();
+  if (!connected()) return;
+  const nw = Number($("v_newbaud").value), old = D.baudrate;
+  if (nw === old) { set_status(`Already ${nw} bps`); return; }
+  if (!(await ask("Baud rate", `Change controller and PC speed ${old} -> ${nw} bps?\nUse 'Save to flash' afterwards to keep it.`))) return;
+  S.baud_check = { stage: "wait_echo", old, new: nw, addr: a };
+  tx(a, "baudrate", [nw]);
+  setTimeout(baud_switch, 400);
+}
+async function baud_switch() {
+  const bc = S.baud_check;
+  if (!bc || bc.stage !== "wait_echo") return;
+  try { await D.setBaud(bc.new); } catch (e) { logline("# Baud change failed: " + (e.message || e), "err"); }
+  S.baud = bc.new;
+  bc.stage = "wait_ver";
+  tx(bc.addr, "ver");
+  setTimeout(baud_timeout, 1000);
+}
+function baud_reply(cmd) {
+  const bc = S.baud_check;
+  if (bc && bc.stage === "wait_ver" && cmd === "ver") {
+    logline(`# Baud rate changed to ${bc.new} bps`, "info");
+    S.baud_check = null;
+    update_conn_label();
+  }
+}
+async function baud_timeout() {
+  const bc = S.baud_check;
+  if (bc && bc.stage === "wait_ver") {
+    S.baud_check = null;
+    try { await D.setBaud(bc.old); } catch (_) {}
+    S.baud = bc.old;
+    logline(`# No reply at ${bc.new} bps - PC reverted to ${bc.old} bps`, "err");
+    update_conn_label();
+  }
+}
+
+// ---------------------------------------------------------------- misc
+function logline(text, tag = "rx") { S.logq.push([text, tag]); }
+function flush_log() {
+  if (!S.logq.length) return;
+  const log = $("log"), atEnd = log.scrollTop + log.clientHeight >= log.scrollHeight - 30;
+  const f = document.createDocumentFragment();
+  for (const [text, tag] of S.logq) {
+    const d = document.createElement("div");
+    d.textContent = text;
+    if (tag !== "rx") d.className = tag;
+    f.append(d);
+  }
+  S.log_lines += S.logq.length;
+  S.logq = [];
+  log.append(f);
+  if (S.log_lines > 3000) {
+    let n = S.log_lines - 2500;
+    while (n-- > 0 && log.firstChild) log.firstChild.remove();
+    S.log_lines = log.childElementCount;
+  }
+  if (atEnd) log.scrollTop = log.scrollHeight;
+}
+function save_log() {
+  flush_log();
+  const text = [...$("log").children].map(d => d.textContent).join("\n");
+  download(`td201_log_${stamp()}.txt`, text + "\n", "text/plain");
+}
+function set_status(text, err = false) { const m = $("msg"); m.textContent = text; m.className = err ? "err" : ""; }
+function about() {
+  const app = window.AndroidHost && AndroidHost.appVersion ? " (app " + AndroidHost.appVersion() + ")" : "";
+  dlg("About", `${APP_NAME} V${APP_VERSION}${app}\nTD-201 2-axis TULA driver\nTechnohands Korea\n\n` +
+    (window.AndroidSerial
+      ? "USB-UART adapters: FTDI, CP210x, CH340/CH341, PL2303, CDC-ACM.\nFTDI latency timer is set to 1 ms automatically (smooth graph)."
+      : "Tip: for a smooth graph set the USB adapter Latency Timer to 1 ms\n(Device Manager > Ports > USB Serial Port > Port Settings > Advanced)."));
+}
+
+// ======================================================================
+// Build / wire the page
+// ======================================================================
+function init() {
+  for (let i = 1; i <= 2; i++) {
+    const s = $("ad" + i);
+    for (let a = 1; a <= 32; a++) s.add(new Option(pad2(a), String(a)));
+    s.value = String(i);
+    s.onchange = () => axis_changed();
+    $("ax" + i).onchange = () => axis_changed();
+  }
+  for (const r of RESOLUTIONS_NM) $("v_res").add(new Option(String(r), String(r)));
+  $("v_res").value = "100";
+  for (const b of BAUDRATES) $("v_newbaud").add(new Option(String(b), String(b)));
+  $("v_newbaud").value = String(DEFAULT_BAUD);
+  for (const [, l] of SPANS) $("v_span").add(new Option(l, l));
+  $("v_span").value = DEFAULT_SPAN;
+
+  // spin boxes (arrows send, Enter sends)
+  wireSpin("v_freq", 1, sender("freq", "v_freq", "Driving Frequency")).value = 45;
+  wireSpin("v_volt", 1, sender("volt", "v_volt", "Voltage", true)).value = 30;
+  wireSpin("v_inp", 1, sender("inp", "v_inp", "In-position")).value = 10;
+  wireSpin("v_offset", 100, sender("offset", "v_offset", "Home offset")).value = 0;
+  wireSpin("v_vel", 1, sender("vel", "v_vel", "Velocity")).value = DEFAULT_VELOCITY;
+  wireSpin("v_ol_freq", 1, sender("freq", "v_ol_freq", "Frequency [kHz]")).value = 45;
+  wireSpin("v_ol_duty", 1, sender("duty", "v_ol_duty", "Duty [%]")).value = 25;
+  wireSpin("v_ol_volt", 1, sender("volt", "v_ol_volt", "Volt [Vdc]", true)).value = 30;
+  wireSpin("v_on", 100, sender("on", "v_on", "Duration (ms/pulse)")).value = 500;
+  wireSpin("v_off", 100, sender("off", "v_off", "Interval (ms)")).value = 1000;
+  wireSpin("v_cy", 1, sender("cy", "v_cy", "Steps (Cycles)")).value = 3;
+  $("v_jogvel").value = DEFAULT_JOG_SPEED;
+
+  // tabs and frame
+  for (const b of document.querySelectorAll(".tabs button")) b.onclick = () => {
+    for (const x of document.querySelectorAll(".tabs button")) x.classList.toggle("on", x === b);
+    for (const t of document.querySelectorAll("#right > .tab")) t.classList.toggle("on", t.id === b.dataset.tab);
+    S.graph_dirty = true;
+  };
+  $("panelBtn").onclick = () => { $("left").classList.toggle("hide"); S.graph_dirty = true; };
+  const narrow = () => window.matchMedia("(max-width:1150px)").matches;
+  if (narrow()) $("left").classList.add("hide");
+  // narrow screens: the panel lies over the tabs - a tap outside closes it
+  $("right").addEventListener("pointerdown", () => { if (narrow()) $("left").classList.add("hide"); }, true);
+  $("portBtn").onclick = port_dialog;
+  $("aboutBtn").onclick = about;
+
+  // left panel
+  $("v_msg").onchange = () => tx_sel("message", [$("v_msg").checked ? 1 : 0]);
+  $("readBtn").onclick = read_status;
+  $("logClear").onclick = () => { S.logq = []; $("log").innerHTML = ""; S.log_lines = 0; };
+  $("logSave").onclick = save_log;
+  for (const cmd of ["cp", "al", "info", "ver"]) {
+    const row = document.createElement("div"), i = document.createElement("input"), b = document.createElement("button");
+    row.className = "test"; i.type = "text"; i.value = ">01" + cmd; i.autocapitalize = "off"; i.spellcheck = false;
+    i.setAttribute("autocorrect", "off");
+    b.textContent = "SEND";
+    b.onclick = () => send_test(i);
+    onEnter(i, () => send_test(i));
+    row.append(i, b);
+    $("tests").append(row);
+  }
+
+  // Configuration
+  for (const r of document.querySelectorAll("input[name=motor]")) r.onchange = () => apply_preset(r.value);
+  $("s_freq").onclick = sender("freq", "v_freq", "Driving Frequency");
+  $("s_enc").onclick = () => tx_sel("enc", [encVal()]);
+  $("s_volt").onclick = sender("volt", "v_volt", "Voltage", true);
+  $("s_res").onclick = sender("res", "v_res", "Resolution");
+  $("s_swap").onclick = () => tx_sel("swap", [$("v_swap").checked ? 1 : 0]);
+  $("s_mid").onclick = () => tx_sel("mid", [$("v_mid").checked ? 1 : 0]);
+  $("advBtn").onclick = toggle_advanced;
+  $("s_baud").onclick = change_baud;
+  $("s_inp").onclick = sender("inp", "v_inp", "In-position");
+  $("s_offset").onclick = sender("offset", "v_offset", "Home offset");
+  $("b_setcfg").onclick = set_configuration;
+  $("b_auto").onclick = auto_tuning;
+  $("b_cfgstop").onclick = stop;
+  $("b_save").onclick = () => tx_sel("save");
+  $("b_reset").onclick = reset_board;
+  $("b_info").onclick = get_information;
+
+  // Motor Control
+  graph = new PosGraph($("graph"), graph_view_changed);
+  graph.set_span(2);
+  $("g_r").onclick = () => { graph.reset_y(); update_y_entries(true); };
+  $("g_out").onclick = () => { graph.zoom_y(2); update_y_entries(true); };
+  $("g_in").onclick = () => { graph.zoom_y(0.5); update_y_entries(true); };
+  $("g_full").onclick = graph_full_view;
+  onEnter($("v_ylo"), graph_set_y); onEnter($("v_yhi"), graph_set_y);
+  for (const r of document.querySelectorAll("input[name=disp]")) r.onchange = display_changed;
+  $("mon1").onclick = () => stream_toggle(0);
+  $("mon2").onclick = () => stream_toggle(1);
+  $("v_span").onchange = span_selected;
+  $("x_out").onclick = () => graph.zoom_x(+1);
+  $("x_in").onclick = () => graph.zoom_x(-1);
+  $("v_follow").onchange = () => graph.set_follow($("v_follow").checked);
+  $("v_ctime").onchange = () => show_pos();
+  $("g_clear").onclick = graph_clear;
+  $("g_csv").onclick = save_csv;
+  $("b_target").onclick = move_abs;
+  $("b_home").onclick = home;
+  $("b_getpos").onclick = () => tx_sel("cp");
+  $("b_rev").onclick = () => move_rel(-1);
+  $("b_fwd").onclick = () => move_rel(+1);
+  $("b_clstop").onclick = stop;
+  $("s_vel").onclick = sender("vel", "v_vel", "Velocity");
+  $("vel_scale").oninput = () => { $("v_vel").value = String(Math.round(Number($("vel_scale").value))); };
+  $("v_vel").addEventListener("input", vel_to_scale);
+  $("b_ptpstart").onclick = ptp_start;
+  $("b_ptpstop").onclick = stop;
+
+  // Jog: press and hold. Released on finger up, touch cancel, app hidden or window blur.
+  for (const [id, d] of [["jogp", +1], ["jogm", -1]]) {
+    const b = $(id);
+    b.addEventListener("pointerdown", e => {
+      e.preventDefault();
+      if (S.jog) return;
+      try { b.setPointerCapture(e.pointerId); } catch (_) {}
+      if (jog_press(d)) b.classList.add("held");
+    });
+    for (const ev of ["pointerup", "pointercancel", "lostpointercapture"]) b.addEventListener(ev, () => jog_release());
+    b.addEventListener("contextmenu", e => e.preventDefault());
+  }
+  window.addEventListener("blur", () => jog_release());
+  document.addEventListener("visibilitychange", () => { if (document.hidden) jog_release(); });
+  window.__td201 = window.__td201 || {};
+  window.__td201.hidden = () => jog_release();
+  window.__td201.saved = (ok, name) => set_status(ok ? "Saved " + name : "Not saved", !ok);
+
+  // Open loop
+  $("s_ol_freq").onclick = sender("freq", "v_ol_freq", "Frequency [kHz]");
+  $("s_ol_duty").onclick = sender("duty", "v_ol_duty", "Duty [%]");
+  $("s_ol_volt").onclick = sender("volt", "v_ol_volt", "Volt [Vdc]", true);
+  $("s_on").onclick = sender("on", "v_on", "Duration (ms/pulse)");
+  $("s_off").onclick = sender("off", "v_off", "Interval (ms)");
+  $("s_cy").onclick = sender("cy", "v_cy", "Steps (Cycles)");
+  $("ol_re").onclick = () => tx_sel("re");
+  $("ol_fo").onclick = () => tx_sel("fo");
+  $("ol_bi").onclick = () => tx_sel("bi");
+  $("ol_st").onclick = stop;
+
+  $("ver").textContent = `${APP_NAME} V${APP_VERSION}`;
+  apply_preset(DEFAULT_MOTOR);
+  axis_changed(true);
+  update_conn_label();
+  setInterval(tick, 10);
+}
+init();
+</script>
+</body>
+</html>
