@@ -363,7 +363,7 @@ public class MainActivity extends Activity {
     private class SerialBridge {
         @JavascriptInterface
         public void requestPort(final int id) {
-            ui.post(() -> requestPort(id));
+            ui.post(() -> MainActivity.this.requestPort(id));   // the activity method, not this one
         }
 
         @JavascriptInterface
