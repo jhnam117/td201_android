@@ -76,6 +76,13 @@ legend{padding:0 5px;font-weight:700}
 .spin button:first-child{border-radius:6px 0 0 6px;border-right:none}
 .spin button:last-child{border-radius:0 6px 6px 0;border-left:none}
 
+/* ---------- ± button inside fields that may be negative (Samsung number pad has no minus) ---------- */
+.signbox{position:relative;display:inline-flex}
+.signbox input{padding-left:28px!important;padding-right:5px!important}
+.sign{position:absolute;left:3px;top:3px;bottom:3px;width:22px;min-height:0!important;padding:0!important;border:none;
+  border-radius:4px;background:#e3e7ef;font-size:15px;font-weight:700;color:#333;z-index:1}
+.sign:active{background:#c9d2e3}
+
 /* ---------- Configuration / Open loop (bigger) ---------- */
 .big{font-size:16px}
 .big button,.big input,.big select{min-height:42px}
@@ -103,10 +110,10 @@ legend{padding:0 5px;font-weight:700}
 .gbar{display:flex;align-items:center;gap:5px;flex-wrap:nowrap}
 .gbar button{padding:2px 9px;min-height:34px}
 .gbar input[type=text],.gbar select{min-height:34px}
-.gbar input[type=text]{width:92px;text-align:right}
+.gbar input[type=text]{width:96px;text-align:right}
 #disp{margin-left:auto;padding:0;border:none;background:none;display:grid;grid-template-columns:repeat(6,auto);gap:0 6px;align-items:center}
 #disp legend{display:none}
-.mon{min-height:32px;min-width:78px;font-size:13px;font-weight:700;border-radius:5px;background:#d6d6d6;color:#404040}
+.mon{min-height:32px;min-width:72px;font-size:13px;font-weight:700;border-radius:5px;background:#d6d6d6;color:#404040}
 .mon.on{background:#2e9e44;color:#fff;border-color:#237a34}
 #graphWrap{flex:1;min-height:120px;position:relative}
 .axSlot{display:none;align-items:center;gap:6px}
@@ -123,12 +130,15 @@ legend{padding:0 5px;font-weight:700}
 #mcb fieldset{padding:2px 8px 6px}
 #mcb button{padding:3px 9px}
 #cl{display:grid;grid-template-columns:auto auto auto auto auto;gap:4px 3px;align-items:center}
-#cl input[type=number]{width:96px;margin:0 4px}
+#cl input[type=number]{width:96px}
+#cl .signbox{margin:0 4px}
+#cl .signbox input{width:116px}
 #velRow{grid-column:2/6;display:flex;align-items:center;gap:6px}
 #velRow input[type=range]{width:110px;margin:0 2px}
 #velRow .spin input{width:64px}
 #ptp{display:grid;grid-template-columns:auto auto auto;gap:4px 6px;align-items:center}
 #ptp input{width:86px}
+#ptp .signbox input{width:104px}
 #jog{flex:1;display:flex;flex-direction:column;gap:4px;min-width:130px}
 #jog input{width:56px}
 .jogb{flex:1;min-height:44px;font-size:19px;font-weight:700;background:#e8eef8;border:2px solid #8ea0bf;touch-action:none;
@@ -206,22 +216,25 @@ legend{padding:0 5px;font-weight:700}
   #mc{gap:3px}
   .gbar{gap:3px}
   .gbar button{padding:2px 7px}
-  .gbar input[type=text]{width:70px}
+  .gbar input[type=text]{width:80px}
   #legend{display:none}
   #disp{margin-left:auto;padding:0;border:none;background:none;grid-template-columns:auto auto auto auto auto auto;gap:0 4px}
   #disp legend{display:none}
-  .mon{min-height:32px;min-width:64px;font-size:12px;padding:2px 4px}
+  .mon{min-height:32px;min-width:58px;font-size:12px;padding:2px 3px}
   #graphWrap{flex:none;height:var(--gh,220px)}
   #graph{touch-action:pan-y}
   #mcb{flex-wrap:wrap;font-size:13px;gap:5px;margin-top:4px}
   #mcb fieldset{padding:1px 6px 5px}
-  #mcb button{padding:2px 6px}
-  #cl input[type=number]{width:74px;margin:0 3px}
+  #mcb button{padding:2px 5px}
+  #cl input[type=number]{width:74px}
+  #cl .signbox{margin:0 3px}
+  #cl .signbox input{width:84px}
   #velRow input[type=range]{width:70px}
   #ptp input{width:68px}
+  #ptp .signbox input{width:80px}
   #tbJog{display:flex;flex:1 1 auto;gap:5px;margin:0 4px 0 6px;min-width:200px}
   #tbJog .jogb{flex:1 1 0;min-height:34px;max-width:170px;font-size:14px;padding:2px 6px;border-width:2px}
-  #jog{flex:1 1 0;min-width:96px;max-width:150px;align-self:stretch}
+  #jog{flex:1 1 0;min-width:88px;max-width:150px;align-self:stretch}
   #jog .row{flex-wrap:wrap;gap:3px}
   #jog input{width:52px}
   #dlg{min-width:min(380px,92vw);max-height:92vh;overflow:auto}
@@ -884,6 +897,23 @@ function wireSpin(id, step, send) {
   m.onclick = () => bump(-1); p.onclick = () => bump(+1);
   if (send) onEnter(i, send);
   return i;
+}
+/* ± button inside a field: flips the sign, keeps the keyboard open (no focus change) */
+function addSign(id, after) {
+  const inp = $(id), box = document.createElement("span"), b = document.createElement("button");
+  box.className = "signbox"; b.className = "sign"; b.type = "button"; b.textContent = "\u00b1"; b.tabIndex = -1;
+  inp.parentNode.insertBefore(box, inp);
+  box.append(b, inp);
+  b.addEventListener("pointerdown", e => e.preventDefault());       // keep focus in the field
+  b.addEventListener("mousedown", e => e.preventDefault());
+  b.addEventListener("click", () => {
+    const v = String(inp.value).trim();
+    if (v === "" || v === "-") {
+      if (inp.type === "text") inp.value = v === "-" ? "" : "-";
+      else set_status("Enter the number first, then \u00b1");
+    } else inp.value = v.startsWith("-") ? v.slice(1) : "-" + v;
+    if (after) after();
+  });
 }
 function onEnter(el, fn) { el.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); fn(); } }); }
 
@@ -1790,6 +1820,11 @@ function init() {
   $("g_in").onclick = () => { graph.zoom_y(0.5); update_y_entries(true); };
   $("g_full").onclick = graph_full_view;
   onEnter($("v_ylo"), graph_set_y); onEnter($("v_yhi"), graph_set_y);
+  // Samsung number pads have no minus key: ± inside the fields that may be negative
+  const ySign = () => { const lo = Number($("v_ylo").value), hi = Number($("v_yhi").value);
+    if (isFinite(lo) && isFinite(hi) && hi > lo && $("v_ylo").value !== "" && $("v_yhi").value !== "") graph_set_y(); };
+  for (const id of ["v_abs", "v_t1", "v_t2"]) addSign(id);
+  addSign("v_ylo", ySign); addSign("v_yhi", ySign);
   for (const r of document.querySelectorAll("input[name=disp]")) r.onchange = display_changed;
   $("mon1").onclick = () => stream_toggle(0);
   $("mon2").onclick = () => stream_toggle(1);
