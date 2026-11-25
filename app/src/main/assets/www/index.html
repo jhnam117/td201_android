@@ -88,7 +88,7 @@ legend{padding:0 5px;font-weight:700}
 #cfgInfo{display:grid!important;grid-template-columns:auto 1fr;gap:4px 10px;align-content:center}
 #cfgInfo .v{font:16px Consolas,"Roboto Mono",monospace}
 #advCell{display:flex;flex-direction:column;gap:6px;min-height:0}
-#advCell > button{align-self:flex-start}
+#advCell > .row{justify-content:space-between}
 #adv{display:none!important;grid-template-columns:auto auto 1fr;gap:6px 8px;align-items:center}
 #adv.open{display:grid!important}
 #adv .send{justify-self:end}
@@ -101,12 +101,23 @@ legend{padding:0 5px;font-weight:700}
 /* ---------- Motor Control ---------- */
 #mc{flex:1;min-height:0;display:flex;flex-direction:column;gap:4px}
 .gbar{display:flex;align-items:center;gap:5px;flex-wrap:nowrap}
-.gbar button{padding:3px 9px}
+.gbar button{padding:2px 9px;min-height:34px}
+.gbar input[type=text],.gbar select{min-height:34px}
 .gbar input[type=text]{width:92px;text-align:right}
-#disp{margin-left:auto;padding:0 8px 4px;display:grid;grid-template-columns:auto auto auto;gap:2px 8px;align-items:center}
-.mon{min-height:32px;min-width:84px;font-size:13px;font-weight:700;border-radius:5px;background:#d6d6d6;color:#404040}
+#disp{margin-left:auto;padding:0;border:none;background:none;display:grid;grid-template-columns:repeat(6,auto);gap:0 6px;align-items:center}
+#disp legend{display:none}
+.mon{min-height:32px;min-width:78px;font-size:13px;font-weight:700;border-radius:5px;background:#d6d6d6;color:#404040}
 .mon.on{background:#2e9e44;color:#fff;border-color:#237a34}
 #graphWrap{flex:1;min-height:120px;position:relative}
+.axSlot{display:none;align-items:center;gap:6px}
+.axSlot fieldset{border:none;background:none;padding:0;display:flex;flex:none}
+.axSlot legend,.axSlot .axl{display:none}
+.axSlot #axes{display:flex;gap:10px}
+.axSlot select{width:64px}
+#mcAxes{margin-left:14px}
+#cfgAxes{margin-right:4px}
+#olAxes{position:absolute;right:14px;top:6px}
+#ol .axSlot fieldset,#cfg .axSlot fieldset{display:flex;padding:0;gap:4px;border:none;background:none;grid-template-columns:none}
 #graph{position:absolute;inset:0;width:100%;height:100%;border:1px solid #9a9a9a;background:#fff;touch-action:none}
 #mcb{display:flex;gap:8px;font-size:15px}
 #mcb fieldset{padding:2px 8px 6px}
@@ -137,6 +148,7 @@ legend{padding:0 5px;font-weight:700}
 
 /* narrow screens: left panel slides over the tabs */
 @media (max-width:1150px){
+  .axSlot{display:flex}
   #banner{width:220px}#banner b{font-size:17px}#banner i{font-size:14px}
   #left{position:absolute;top:50px;bottom:28px;left:0;z-index:5;background:var(--bg);box-shadow:3px 0 12px rgba(0,0,0,.3);padding-right:8px}
 }
@@ -162,6 +174,7 @@ legend{padding:0 5px;font-weight:700}
   .tabs{margin:0 0 -4px 0;gap:1px}
   .tabs button{min-height:34px;padding:2px 8px;font-size:12px}
   #topAxes{display:flex}
+  .axSlot{display:none}
   #topAxes #axes{display:flex;gap:4px}
   #conn{font-size:11px;line-height:1.15;white-space:normal;max-width:96px}
   #portBtn,#aboutBtn{padding:2px 8px}
@@ -281,7 +294,8 @@ legend{padding:0 5px;font-weight:700}
           <label><input type="checkbox" id="v_mid">Invert direction</label>
           <button class="send" id="s_mid">SEND</button></fieldset>
         <div id="advCell">
-          <button id="advBtn">Advanced &#9660;</button>
+          <div class="row"><button id="advBtn">Advanced &#9660;</button>
+            <span class="axSlot" id="cfgAxes"><span class="mut">Axis</span><span class="slot"></span></span></div>
           <fieldset id="adv"><legend>Advanced</legend>
             <span>Baud rate</span><select id="v_newbaud"></select><button class="send" id="s_baud">Change</button>
             <span>In-position</span><span class="spin" data-id="v_inp"></span><button class="send" id="s_inp">SEND</button>
@@ -306,8 +320,7 @@ legend{padding:0 5px;font-weight:700}
           <input type="text" inputmode="decimal" id="v_ylo" style="margin-left:6px"><span>-</span>
           <input type="text" inputmode="decimal" id="v_yhi">
           <button id="g_full">Full View</button>
-          <span id="legend"><span style="color:var(--red);margin-left:6px">&lt;A : Target Position</span> /
-          <span style="color:var(--blue)">&lt;B : Current Position</span></span>
+          <span class="axSlot" id="mcAxes"><span class="mut">Axis</span><span class="slot"></span></span>
           <fieldset id="disp"><legend>Display</legend>
             <span>Graph</span>
             <label><input type="radio" name="disp" value="1" checked>1</label>
@@ -321,7 +334,9 @@ legend{padding:0 5px;font-weight:700}
           <label style="margin-left:6px"><input type="checkbox" id="v_follow" checked>Follow</label>
           <label><input type="checkbox" id="v_movesonly" checked>Moves only</label>
           <span id="tbJog"></span>
-          <span class="grow"></span>
+          <span id="legend"><span style="color:var(--red);margin-left:10px">&lt;A : Target Position</span> /
+          <span style="color:var(--blue)">&lt;B : Current Position</span></span>
+          <span class="grow" id="gbar2grow"></span>
           <button id="g_clear">Clear</button><button id="g_csv">Save CSV</button>
           <label style="margin-left:6px" id="ctimeLab"><input type="checkbox" id="v_ctime" checked>C = time axis</label>
         </div>
@@ -351,7 +366,8 @@ legend{padding:0 5px;font-weight:700}
 
       <!-- Open loop -->
       <div class="tab big" id="tabOl"><div id="ol" style="display:flex;flex-direction:column">
-        <fieldset><legend>Setting</legend>
+        <fieldset style="position:relative"><legend>Setting</legend>
+          <span class="axSlot" id="olAxes"><span class="mut">Axis</span><span class="slot"></span></span>
           <span>Frequency [kHz]</span><span class="spin" data-id="v_ol_freq"></span><span class="mut">20-100</span><button id="s_ol_freq">Send</button>
           <span>Duty [%]</span><span class="spin" data-id="v_ol_duty"></span><span class="mut">1-48 (normally 25)</span><button id="s_ol_duty">Send</button>
           <span>Volt [Vdc]</span><span class="spin" data-id="v_ol_volt"></span><span class="mut">16-35 (both axes)</span><button id="s_ol_volt">Send</button>
@@ -1633,8 +1649,8 @@ const PHONE_QUERY = "(max-height:540px), (max-width:860px)";
 const isPhone = () => window.matchMedia(PHONE_QUERY).matches;
 function apply_layout() {
   const phone = isPhone(), axes = $("axes");
-  const home = phone ? $("topAxes") : $("left");
-  if (axes.parentNode !== home) home.prepend(axes);
+  // phone: top bar / narrow tablet (left panel folded): Motor Control tool row / wide: left panel
+  place_axes();
   $("aboutBtn").textContent = phone ? "?" : "About";
   // phone: Jog buttons go to the X span row (next to the graph), "C = time axis" to the first row
   const jm = $("jogm"), jp = $("jogp");
@@ -1653,6 +1669,18 @@ function apply_layout() {
   document.documentElement.style.setProperty("--tb", $("top").offsetHeight + "px");   // panel starts below the top bar
   update_conn_label();
   fit_graph();
+}
+/* Axis 1/2 boxes: phone = top bar; narrow tablet (left panel folded) = empty space of the open tab;
+   wide tablet = left panel. */
+function place_axes() {
+  const axes = $("axes");
+  let home = $("left");
+  if (isPhone()) home = $("topAxes");
+  else if (window.matchMedia("(max-width:1150px)").matches) {
+    const tab = document.querySelector("#right > .tab.on").id;
+    home = $({ tabMc: "mcAxes", tabCfg: "cfgAxes", tabOl: "olAxes" }[tab]).querySelector(".slot");
+  }
+  if (axes.parentNode !== home) home.prepend(axes);
 }
 function fit_graph() {
   const w = $("graphWrap");
@@ -1703,6 +1731,7 @@ function init() {
     for (const x of document.querySelectorAll(".tabs button")) x.classList.toggle("on", x === b);
     for (const t of document.querySelectorAll("#right > .tab")) t.classList.toggle("on", t.id === b.dataset.tab);
     if (isPhone()) window.scrollTo(0, 0);
+    place_axes();
     fit_graph();
     S.graph_dirty = true;
   };
