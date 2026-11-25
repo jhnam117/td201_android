@@ -58,15 +58,24 @@ legend{padding:0 5px;font-weight:700}
 #axes{display:flex;gap:6px}
 #axes fieldset{flex:1;padding:2px 6px 6px}
 #axes select{width:62px}
-.st-row{display:flex;gap:6px;align-items:baseline;margin-top:4px}
+.st-row{display:flex;gap:6px;align-items:baseline;margin-top:2px}
+#left > fieldset{padding:0 8px 5px}
+#left legend{font-size:13px}
+#rsBox label{min-height:28px}
+#stBox .row button{min-height:32px;padding:2px 12px}
+#stBox .st-hex{font-size:13px}
+#stBox .st-fl{font-size:12px}
+#stBox .st-pos{font-size:12px;padding-left:2px}
 .st-hex{font:700 14px Consolas,"Roboto Mono",monospace;white-space:nowrap}
 .st-fl{flex:1;font-size:13px;word-break:break-word}
 .st-pos{font:13px Consolas,"Roboto Mono",monospace;color:#333;padding-left:4px}
-#logBox{flex:1;display:flex;flex-direction:column;min-height:150px}
+#logBox{flex:1;display:flex;flex-direction:column;min-height:200px}
+#logBox .row button{min-height:32px}
 #log{flex:1;margin-top:4px;overflow:auto;border:1px solid #9a9aa4;border-radius:4px;background:#fff;padding:2px 4px;
   font:12px/1.35 Consolas,"Roboto Mono",monospace;white-space:pre;-webkit-user-select:text;user-select:text;min-height:80px}
 #log .tx{color:#808080}#log .err{color:var(--err)}#log .info{color:#006060}
 .test{display:flex;gap:4px;margin-top:3px}
+.test input,.test button{min-height:34px}
 .test input{flex:1;font:13px Consolas,"Roboto Mono",monospace}
 
 /* ---------- spin box ---------- */
@@ -157,10 +166,12 @@ legend{padding:0 5px;font-weight:700}
 #dlg.error h3{color:var(--err)}
 
 /* narrow screens: left panel slides over the tabs */
+/* All tablets (user, 2026-11-25): the left panel is folded behind the menu button and slides over the tabs;
+   the Axis boxes sit in the empty space of the open tab. */
+.axSlot{display:flex}
+#left{position:absolute;top:50px;bottom:28px;left:0;z-index:5;background:var(--bg);box-shadow:3px 0 12px rgba(0,0,0,.3);padding-right:8px}
 @media (max-width:1150px){
-  .axSlot{display:flex}
   #banner{width:220px}#banner b{font-size:17px}#banner i{font-size:14px}
-  #left{position:absolute;top:50px;bottom:28px;left:0;z-index:5;background:var(--bg);box-shadow:3px 0 12px rgba(0,0,0,.3);padding-right:8px}
 }
 #tbJog{display:none}
 /* axis selection inside the top bar (phone only) */
@@ -194,7 +205,7 @@ legend{padding:0 5px;font-weight:700}
   .tab.on{display:block}
   #left{position:fixed;top:var(--tb,40px);bottom:0;left:0;width:300px;max-width:88vw;z-index:20;background:var(--bg);
     box-shadow:3px 0 12px rgba(0,0,0,.3);padding:6px 8px;overflow-y:auto}
-  #logBox{flex:none;height:220px}
+  #logBox{flex:none;height:300px}
   #bar{position:sticky;bottom:0;z-index:8;min-height:20px;padding:1px 8px;font-size:11px}
   /* Configuration / Open loop */
   .big{font-size:13px}
@@ -267,9 +278,9 @@ legend{padding:0 5px;font-weight:700}
         <fieldset><legend>Address #2</legend>
           <div class="row"><label><input type="checkbox" id="ax2"><span class="axl">Axis 2</span></label><select id="ad2"></select></div></fieldset>
       </div>
-      <fieldset><legend>RS485 received data</legend>
+      <fieldset id="rsBox"><legend>RS485 received data</legend>
         <label><input type="checkbox" id="v_msg" checked>Message on/off</label></fieldset>
-      <fieldset><legend>Status</legend>
+      <fieldset id="stBox"><legend>Status</legend>
         <div class="row"><button id="readBtn">Read</button><label><input type="checkbox" id="v_live">Live update</label></div>
         <div id="stRows"></div></fieldset>
       <fieldset id="logBox"><legend>Received data...</legend>
@@ -856,7 +867,7 @@ const S = {
   ctime: {}, move_cmd_t: {}, cval: {}, ptp: null, stop_pending: new Set(), jog: null,
   home_warned: new Set(), jog_axes: new Set(), baud_check: null, seq_after: null,
   last_draw: 0, graph_dirty: true, live_i: -1, rel_sent: {}, stream_on: [false, false],
-  baud: DEFAULT_BAUD, logq: [], log_lines: 0
+  baud: DEFAULT_BAUD, logq: [], log_lines: 0, log_stick: true
 };
 const cacheOf = a => (S.cache[a] = S.cache[a] || {});
 const trace = a => (S.traces[a] = S.traces[a] || new Trace());
@@ -1640,7 +1651,7 @@ async function baud_timeout() {
 function logline(text, tag = "rx") { S.logq.push([text, tag]); }
 function flush_log() {
   if (!S.logq.length) return;
-  const log = $("log"), atEnd = log.scrollTop + log.clientHeight >= log.scrollHeight - 30;
+  const log = $("log");
   const f = document.createDocumentFragment();
   for (const [text, tag] of S.logq) {
     const d = document.createElement("div");
@@ -1656,7 +1667,13 @@ function flush_log() {
     while (n-- > 0 && log.firstChild) log.firstChild.remove();
     S.log_lines = log.childElementCount;
   }
-  if (atEnd) log.scrollTop = log.scrollHeight;
+  if (S.log_stick) log.scrollTop = log.scrollHeight;
+}
+/* Received data: stays on the newest line unless the user scrolled up to read older lines.
+   While the panel is closed the box has no size, so it is moved to the end when the panel opens. */
+function log_to_end() {
+  const log = $("log");
+  if (S.log_stick) requestAnimationFrame(() => { log.scrollTop = log.scrollHeight; });
 }
 function save_log() {
   flush_log();
@@ -1706,7 +1723,7 @@ function place_axes() {
   const axes = $("axes");
   let home = $("left");
   if (isPhone()) home = $("topAxes");
-  else if (window.matchMedia("(max-width:1150px)").matches) {
+  else {
     const tab = document.querySelector("#right > .tab.on").id;
     home = $({ tabMc: "mcAxes", tabCfg: "cfgAxes", tabOl: "olAxes" }[tab]).querySelector(".slot");
   }
@@ -1765,10 +1782,17 @@ function init() {
     fit_graph();
     S.graph_dirty = true;
   };
-  $("panelBtn").onclick = () => { $("left").classList.toggle("hide"); S.graph_dirty = true; };
-  const narrow = () => window.matchMedia("(max-width:1150px)").matches;
-  if (narrow()) $("left").classList.add("hide");
-  // narrow screens: the panel lies over the tabs - a tap outside closes it
+  $("panelBtn").onclick = () => {
+    if (!$("left").classList.toggle("hide")) { flush_log(); log_to_end(); }
+    S.graph_dirty = true;
+  };
+  $("log").addEventListener("scroll", () => {
+    const log = $("log");
+    if (log.clientHeight > 0) S.log_stick = log.scrollTop + log.clientHeight >= log.scrollHeight - 30;
+  });
+  const narrow = () => true;          // every screen size: panel folded behind the menu button
+  $("left").classList.add("hide");
+  // the panel lies over the tabs - a tap outside closes it
   document.addEventListener("pointerdown", e => {
     const l = $("left");
     if (narrow() && !l.classList.contains("hide") && !l.contains(e.target) && !$("panelBtn").contains(e.target)
@@ -1780,9 +1804,9 @@ function init() {
   // left panel
   $("v_msg").onchange = () => tx_sel("message", [$("v_msg").checked ? 1 : 0]);
   $("readBtn").onclick = read_status;
-  $("logClear").onclick = () => { S.logq = []; $("log").innerHTML = ""; S.log_lines = 0; };
+  $("logClear").onclick = () => { S.logq = []; $("log").innerHTML = ""; S.log_lines = 0; S.log_stick = true; };
   $("logSave").onclick = save_log;
-  for (const cmd of ["cp", "al", "info", "ver"]) {
+  for (const cmd of ["cp", "al", "info"]) {
     const row = document.createElement("div"), i = document.createElement("input"), b = document.createElement("button");
     row.className = "test"; i.type = "text"; i.value = ">01" + cmd; i.autocapitalize = "off"; i.spellcheck = false;
     i.setAttribute("autocorrect", "off");
